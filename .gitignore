@@ -1,9 +1,11 @@
+# IDE
+.vscode/
+
+# AI assistant
+.codex/
+.claude/
+
+# node
 node_modules/
 dist/
-.DS_Store
-.vscode/
-.idea/
-*.log
-.env
-.env.*
-!.env.example
+npm-debug.log*
