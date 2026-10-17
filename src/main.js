@@ -79,6 +79,21 @@ function animationFrame(timestamp) {
 }
 
 function setupControls() {
+  const studio = document.getElementById("studioButton");
+  const reference = document.getElementById("referenceButton");
+  function workspace(showReference) {
+    document.querySelector(".control-panel").hidden = showReference;
+    document.querySelector(".canvas-panel").hidden = showReference;
+    document.getElementById("referenceWorkspace").hidden = !showReference;
+    document.querySelector(".workspace").classList.toggle("reference-mode", showReference);
+    studio.setAttribute("aria-pressed", String(!showReference));
+    reference.setAttribute("aria-pressed", String(showReference));
+  }
+  studio.addEventListener("click", () => workspace(false));
+  reference.addEventListener("click", () => workspace(true));
+  document.getElementById("redoButton").addEventListener("click", () => {
+    store.redo(); previousRing = null; recompute();
+  });
   elements.undoButton.addEventListener("click", () => {
     store.undo();
     previousRing = null;
