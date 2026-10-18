@@ -54,6 +54,7 @@ The app turns a freehand spell diagram into parser output, compiled spell behavi
 - Closed but invalid diagrams may show diagnostics, but they do not fall back to another element.
 - This is a browser prototype, not a production drawing engine or general symbol recognizer.
 - Drafts stay only in the current browser profile and are not synced between devices.
+- Browser-local drafts above 500 strokes, 20,000 points, or 1,000,000 serialized characters are discarded to keep startup and drawing bounded.
 
 ## Run Locally
 

@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { loadDraft, restoreDraft, saveDraft } from "../src/input/draftStorage.js";
+import {
+  DRAFT_STORAGE_KEY,
+  loadDraft,
+  restoreDraft,
+  saveDraft
+} from "../src/input/draftStorage.js";
 import { createStrokeStore } from "../src/input/strokeStore.js";
 
 class MemoryStorage {
@@ -108,4 +113,58 @@ test("reports a failed draft write without throwing", () => {
 
 test("treats an unavailable draft store as an empty draft", () => {
   assert.deepEqual(loadDraft(new ThrowingStorage(), { width: 10, height: 10 }), []);
+});
+
+test("discards drafts whose point count exceeds the restoration budget", () => {
+  const storage = new MemoryStorage();
+  const points = Array.from({ length: 20_001 }, (_, index) => ({
+    x: index % 100,
+    y: index % 80,
+    pressure: 0.5,
+    t: index
+  }));
+  storage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
+    version: 1,
+    width: 100,
+    height: 80,
+    strokes: [{ points }]
+  }));
+
+  assert.deepEqual(loadDraft(storage, { width: 100, height: 80 }), []);
+  assert.equal(storage.getItem(DRAFT_STORAGE_KEY), null);
+});
+
+test("discards drafts whose stroke count would make restoration expensive", () => {
+  const storage = new MemoryStorage();
+  const strokes = Array.from({ length: 501 }, (_, index) => ({
+    points: [
+      { x: index, y: 1, pressure: 0.5, t: index * 2 },
+      { x: index + 1, y: 2, pressure: 0.5, t: index * 2 + 1 }
+    ]
+  }));
+  storage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
+    version: 1,
+    width: 1000,
+    height: 800,
+    strokes
+  }));
+
+  assert.deepEqual(loadDraft(storage, { width: 1000, height: 800 }), []);
+  assert.equal(storage.getItem(DRAFT_STORAGE_KEY), null);
+});
+
+test("refuses to save a draft beyond the point budget", () => {
+  const storage = new MemoryStorage();
+  const points = Array.from({ length: 20_001 }, (_, index) => ({
+    x: index % 100,
+    y: index % 80,
+    t: index
+  }));
+
+  assert.equal(saveDraft(storage, {
+    strokes: [{ points }],
+    width: 100,
+    height: 80
+  }), false);
+  assert.equal(storage.getItem(DRAFT_STORAGE_KEY), null);
 });

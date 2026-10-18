@@ -1,4 +1,9 @@
 export const DRAFT_STORAGE_KEY = "witch-hat-atelier:draft:v1";
+export const DRAFT_LIMITS = Object.freeze({
+  maxSerializedCharacters: 1_000_000,
+  maxStrokes: 500,
+  maxPoints: 20_000
+});
 
 const DRAFT_VERSION = 1;
 
@@ -21,13 +26,18 @@ function copyPoint(point, scaleX = 1, scaleY = 1) {
 }
 
 function copyStrokes(strokes, scaleX = 1, scaleY = 1) {
-  if (!Array.isArray(strokes)) {
+  if (!Array.isArray(strokes) || strokes.length > DRAFT_LIMITS.maxStrokes) {
     return null;
   }
 
   const copied = [];
+  let pointCount = 0;
   for (const stroke of strokes) {
     if (!stroke || !Array.isArray(stroke.points) || stroke.points.length < 2) {
+      return null;
+    }
+    pointCount += stroke.points.length;
+    if (pointCount > DRAFT_LIMITS.maxPoints) {
       return null;
     }
     const points = stroke.points.map((point) => copyPoint(point, scaleX, scaleY));
@@ -37,6 +47,14 @@ function copyStrokes(strokes, scaleX = 1, scaleY = 1) {
     copied.push(points);
   }
   return copied;
+}
+
+function removeDraft(storage) {
+  try {
+    storage.removeItem(DRAFT_STORAGE_KEY);
+  } catch {
+    // Storage can be disabled between reads and writes. Drawing must remain usable.
+  }
 }
 
 export function saveDraft(storage, { strokes, width, height }) {
@@ -54,12 +72,16 @@ export function saveDraft(storage, { strokes, width, height }) {
     if (!copied) {
       return false;
     }
-    storage.setItem(DRAFT_STORAGE_KEY, JSON.stringify({
+    const serialized = JSON.stringify({
       version: DRAFT_VERSION,
       width,
       height,
       strokes: copied.map((points) => ({ points }))
-    }));
+    });
+    if (serialized.length > DRAFT_LIMITS.maxSerializedCharacters) {
+      return false;
+    }
+    storage.setItem(DRAFT_STORAGE_KEY, serialized);
     return true;
   } catch {
     return false;
@@ -76,17 +98,31 @@ export function loadDraft(storage, { width, height }) {
     if (!serialized) {
       return [];
     }
+    if (
+      typeof serialized !== "string" ||
+      serialized.length > DRAFT_LIMITS.maxSerializedCharacters
+    ) {
+      removeDraft(storage);
+      return [];
+    }
     const draft = JSON.parse(serialized);
     if (
       draft?.version !== DRAFT_VERSION ||
       !isFiniteNumber(draft.width) || draft.width <= 0 ||
       !isFiniteNumber(draft.height) || draft.height <= 0
     ) {
+      removeDraft(storage);
       return [];
     }
 
-    return copyStrokes(draft.strokes, width / draft.width, height / draft.height) ?? [];
+    const strokes = copyStrokes(draft.strokes, width / draft.width, height / draft.height);
+    if (!strokes) {
+      removeDraft(storage);
+      return [];
+    }
+    return strokes;
   } catch {
+    removeDraft(storage);
     return [];
   }
 }
