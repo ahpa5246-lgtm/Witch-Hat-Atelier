@@ -1,6 +1,7 @@
 import { CONFIG } from "./config.js";
 import { loadDictionary } from "./dictionary/dictionaryLoader.js";
 import { DrawingCapture } from "./input/drawingCapture.js";
+import { restoreDraft, saveDraft } from "./input/draftStorage.js";
 import { createStrokeStore } from "./input/strokeStore.js";
 import { classifyDrawing } from "./parser/drawingClassifier.js";
 import { compileSpell } from "./compiler/spellBuilder.js";
@@ -21,6 +22,26 @@ let pipeline = null;
 let spellIR = null;
 let previousRing = null;
 let resizeObserver = null;
+let draftStorage = null;
+
+function getDraftStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function persistDraft() {
+  if (!draftStorage) {
+    return;
+  }
+  saveDraft(draftStorage, {
+    strokes: store.getStrokes(),
+    width: elements.glyphCanvas.width,
+    height: elements.glyphCanvas.height
+  });
+}
 
 function setupCanvasSizing() {
   resizeObserver = setupResponsiveCanvasSizing({
@@ -34,6 +55,7 @@ function setupCanvasSizing() {
 }
 
 function recompute() {
+  persistDraft();
   if (!dictionary) {
     return;
   }
@@ -122,6 +144,13 @@ function setupControls() {
 async function init() {
   setupTabs(elements);
   setupControls();
+  draftStorage = getDraftStorage();
+  if (draftStorage) {
+    restoreDraft(draftStorage, store, {
+      width: elements.glyphCanvas.width,
+      height: elements.glyphCanvas.height
+    });
+  }
   setupCanvasSizing();
   renderer = new CanvasRenderer({
     glyphCanvas: elements.glyphCanvas,

@@ -33,6 +33,7 @@ This is an unofficial fan-made project for learning, experimentation, and apprec
 The app turns a freehand spell diagram into parser output, compiled spell behavior, and animated canvas effects.
 
 - Lets you draw spell diagrams on a paper-like canvas.
+- Restores the current drawing after a refresh using browser-local draft storage; clearing the canvas removes that draft.
 - Detects one enclosing ring and distinguishes prepared versus active spells.
 - Recognizes dictionary-backed primary sigils for fire, water, wind, earth, and light.
 - Recognizes signs that modify direction, levitation, convergence, force, spread, focus, range, duration, and stability.
@@ -52,13 +53,14 @@ The app turns a freehand spell diagram into parser output, compiled spell behavi
 - Raster images can be used as visual references, but the app cannot recover true stroke order from an image.
 - Closed but invalid diagrams may show diagnostics, but they do not fall back to another element.
 - This is a browser prototype, not a production drawing engine or general symbol recognizer.
+- Drafts stay only in the current browser profile and are not synced between devices.
 
 ## Run Locally
 
 Install dependencies:
 
 ```sh
-npm install
+npm ci
 ```
 
 Start the Vite dev server:
