@@ -15,6 +15,8 @@ async function canvasSignature(canvas) {
 }
 
 async function drawStroke(page, canvas) {
+  await canvas.scrollIntoViewIfNeeded();
+  await expect(canvas).toBeInViewport();
   const box = await canvas.boundingBox();
   if (!box) throw new Error("Drawing canvas has no visible bounding box");
 
