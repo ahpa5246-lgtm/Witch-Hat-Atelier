@@ -62,3 +62,56 @@ test("drawing survives guide navigation and a real page reload", async ({ page }
   }, DRAFT_KEY)).toBe(1);
   await page.screenshot({ path: testInfo.outputPath("restored-studio.png"), fullPage: true });
 });
+
+test("narrow studio starts with the complete drawing surface in the first viewport", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "narrow", "narrow acceptance only");
+
+  await page.goto("/");
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+
+  const surface = page.locator(".canvas-shell");
+  await expect(surface).toBeVisible();
+  const box = await surface.boundingBox();
+  const viewport = page.viewportSize();
+
+  expect(box).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(box.y).toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+});
+
+test("narrow canvas instructions meet WCAG AA contrast", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "narrow", "narrow acceptance only");
+
+  await page.goto("/");
+  const ratio = await page.locator("#canvasHint").evaluate((hint) => {
+    const parseColor = (value) => {
+      const channels = value.match(/[\d.]+/g)?.map(Number) ?? [];
+      return {
+        r: channels[0] ?? 0,
+        g: channels[1] ?? 0,
+        b: channels[2] ?? 0,
+        a: channels[3] ?? 1
+      };
+    };
+    const linear = (channel) => {
+      const value = channel / 255;
+      return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+    };
+    const luminance = ({ r, g, b }) =>
+      0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b);
+
+    const foreground = parseColor(getComputedStyle(hint).color);
+    const background = parseColor(getComputedStyle(hint.closest(".canvas-shell")).backgroundColor);
+    const composite = {
+      r: foreground.r * foreground.a + background.r * (1 - foreground.a),
+      g: foreground.g * foreground.a + background.g * (1 - foreground.a),
+      b: foreground.b * foreground.a + background.b * (1 - foreground.a)
+    };
+    const light = Math.max(luminance(composite), luminance(background));
+    const dark = Math.min(luminance(composite), luminance(background));
+    return (light + 0.05) / (dark + 0.05);
+  });
+
+  expect(ratio).toBeGreaterThanOrEqual(4.5);
+});
