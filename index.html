@@ -15,14 +15,19 @@
           <h1>Witch Hat Atelier Spell Simulator</h1>
         </div>
         <div class="header-actions">
-          <a class="header-link" href="https://github.com/ytnrvdf/wha-spell-simulator" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="header-link" href="https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </header>
 
-      <main class="workspace">
+      <nav class="workspace-nav" aria-label="Workspace">
+        <button type="button" id="studioButton" aria-pressed="true">Drawing studio</button>
+        <button type="button" id="referenceButton" aria-pressed="false">Field guide</button>
+      </nav>
+      <main class="workspace" id="drawingWorkspace">
         <aside class="control-panel" aria-label="Spell controls">
           <section class="control-section">
             <button type="button" id="undoButton">Undo</button>
+            <button type="button" id="redoButton">Redo</button>
             <button type="button" id="clearButton">Clear</button>
           </section>
 
@@ -80,7 +85,7 @@
           </div>
         </section>
 
-        <aside class="dictionary-panel" aria-label="Dictionary and diagnostics">
+        <aside class="dictionary-panel" id="referenceWorkspace" aria-label="Dictionary and diagnostics" hidden>
           <div class="panel-tabs">
             <button type="button" class="panel-tab-button active" data-panel-root="dictionaryRootPanel">Dictionary</button>
             <button type="button" class="panel-tab-button" data-panel-root="diagnosticRootPanel">Diagnostic</button>

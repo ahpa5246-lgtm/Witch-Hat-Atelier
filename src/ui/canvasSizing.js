@@ -1,6 +1,8 @@
 export function setupCanvasSizing({ elements, store, onCanvasResized }) {
   function syncCanvasSize() {
     const rect = elements.canvasShell.getBoundingClientRect();
+    // A hidden workspace must not collapse and rescale the drawing to 1px.
+    if (rect.width <= 0 || rect.height <= 0) return;
     const width = Math.max(1, Math.round(rect.width));
     const height = Math.max(1, Math.round(rect.height));
     const previousWidth = elements.glyphCanvas.width;

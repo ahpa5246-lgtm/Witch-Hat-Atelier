@@ -1,6 +1,7 @@
 import { CONFIG } from "./config.js";
 import { loadDictionary } from "./dictionary/dictionaryLoader.js";
 import { DrawingCapture } from "./input/drawingCapture.js";
+import { restoreDraft, saveDraft } from "./input/draftStorage.js";
 import { createStrokeStore } from "./input/strokeStore.js";
 import { classifyDrawing } from "./parser/drawingClassifier.js";
 import { compileSpell } from "./compiler/spellBuilder.js";
@@ -21,6 +22,26 @@ let pipeline = null;
 let spellIR = null;
 let previousRing = null;
 let resizeObserver = null;
+let draftStorage = null;
+
+function getDraftStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function persistDraft() {
+  if (!draftStorage) {
+    return;
+  }
+  saveDraft(draftStorage, {
+    strokes: store.getStrokes(),
+    width: elements.glyphCanvas.width,
+    height: elements.glyphCanvas.height
+  });
+}
 
 function setupCanvasSizing() {
   resizeObserver = setupResponsiveCanvasSizing({
@@ -34,6 +55,7 @@ function setupCanvasSizing() {
 }
 
 function recompute() {
+  persistDraft();
   if (!dictionary) {
     return;
   }
@@ -79,6 +101,21 @@ function animationFrame(timestamp) {
 }
 
 function setupControls() {
+  const studio = document.getElementById("studioButton");
+  const reference = document.getElementById("referenceButton");
+  function workspace(showReference) {
+    document.querySelector(".control-panel").hidden = showReference;
+    document.querySelector(".canvas-panel").hidden = showReference;
+    document.getElementById("referenceWorkspace").hidden = !showReference;
+    document.querySelector(".workspace").classList.toggle("reference-mode", showReference);
+    studio.setAttribute("aria-pressed", String(!showReference));
+    reference.setAttribute("aria-pressed", String(showReference));
+  }
+  studio.addEventListener("click", () => workspace(false));
+  reference.addEventListener("click", () => workspace(true));
+  document.getElementById("redoButton").addEventListener("click", () => {
+    store.redo(); previousRing = null; recompute();
+  });
   elements.undoButton.addEventListener("click", () => {
     store.undo();
     previousRing = null;
@@ -107,6 +144,13 @@ function setupControls() {
 async function init() {
   setupTabs(elements);
   setupControls();
+  draftStorage = getDraftStorage();
+  if (draftStorage) {
+    restoreDraft(draftStorage, store, {
+      width: elements.glyphCanvas.width,
+      height: elements.glyphCanvas.height
+    });
+  }
   setupCanvasSizing();
   renderer = new CanvasRenderer({
     glyphCanvas: elements.glyphCanvas,
