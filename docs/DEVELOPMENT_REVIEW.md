@@ -35,11 +35,23 @@ GitHub Actions run 39150840570 then passed the complete current-head pipeline on
 
 The inspected evidence leaves visual-quality gaps: the desktop guide workspace has excessive unused vertical space and sparse information hierarchy, while the restored studio footer wraps awkwardly and crowds the lower edge. At 760x900, the drawing surface starts below a 550px-tall control/state stack and is absent from the initial viewport, making the core action undiscoverable without scrolling; the helper text over the pale canvas is also nearly unreadable. The narrow Field guide fits, but still leaves a large empty region between its sparse cards and the legal footer. These are recorded defects, not accepted polish.
 
+### Narrow canvas-first acceptance, 2026-10-25
+
+The bounded product-layout stage is CSS-only: at widths up to 760px the Drawing studio places the canvas before the control/state panel, and the canvas helper uses an opaque paper card with the normal ink color. Drawing, recognition, storage, guide navigation and desktop ordering are unchanged.
+
+The acceptance tests were added before the layout repair. GitHub Actions run 40134945350 failed only the two new assertions: the complete narrow canvas shell ended at 1212.125px in a 900px viewport, and the helper contrast measured 4.246183813284835:1 against the canvas. The existing desktop/narrow continuity journeys, all 40 Node tests and the production build still passed in that red run. This confirms that the tests exercised the intended defects rather than an unrelated regression.
+
+After the responsive CSS repair, GitHub Actions run 40139212683 passed on head commit `68be74c10863e7135f50439ac1570dd9708f9ea2`: dependency installation, all 40 Node tests, Vite 6.4.4 production build, Chromium installation and browser journeys. Playwright reported four passes and two intentional desktop-project skips: both desktop/narrow continuity journeys passed, while the narrow project additionally proved the complete canvas shell is inside the initial 760x900 viewport and the computed helper contrast meets WCAG AA (at least 4.5:1).
+
+Artifact `browser-evidence-f8bc0b5826e7e3833c800d86751fc50695129118` (ID 12578200334; 760,513 bytes; SHA-256 `5e4f2fd81345897cd0c277961483b5de31ef2abc16ae29e2315e86e5658c01a8`) is bound by workflow metadata to head `68be74c10863e7135f50439ac1570dd9708f9ea2`. Its four desktop/narrow Field guide and restored-studio screenshots were inspected. The 760x900 restored-studio image now shows the full drawing surface before the controls; the desktop layout remains side-by-side. The narrow Field guide is unchanged and its large empty lower region remains an explicit visual-quality gap. The screenshots show the post-draw state, so helper readability is supported by the live Chromium computed-style assertion rather than by that static frame.
+
+This stage does not establish final art direction, complete comparative visual QA, keyboard coverage, recognition correctness after history operations, or release readiness.
+
 Synthetic Node 24.19 profiling of the prior unrestricted serializer measured 10,000 points at 417,491 characters (3.30 ms save / 2.29 ms load), 50,000 at 2,132,021 (10.43 / 14.89 ms), and 100,000 at 4,275,211 (31.69 / 34.98 ms). Those timings exclude stroke-store reconstruction, classification, rendering and browser storage I/O, so they are lower bounds rather than browser performance claims.
 
 The Senior Skills example visual gate was run and correctly returned BLOCKED_UNVERIFIED_DESIGN; its draft lacks verified asset licenses. That result is framework evidence, not a project-specific visual pass. Actual screenshots, app-commit binding, keyboard/RTL checks, and task observations are required before release readiness.
 
 ## Next acceptance boundary
-Address the narrow journey's below-the-fold drawing surface and unreadable canvas instructions as a separate product-layout stage, with new desktop/narrow screenshots bound to the resulting commit. Recognition and activation after undo/redo remain separate browser work. Keep persistence browser-local; this stage does not claim cloud sync, final art direction, keyboard coverage, or complete comparative visual QA.
+The canvas-first narrow-layout defect and helper-contrast defect are verified at the code commit above. The next separate browser stage is recognition and activation after undo/redo, including evidence that history changes update diagnostics/effects without corrupting the browser-local draft. Keyboard coverage, the sparse Field guide hierarchy, final art direction and complete comparative visual QA remain open and must not be inferred from this milestone.
 
 Rollback: revert this milestone branch before merge. Do not merge or deploy automatically. Future runs must inspect open PRs and continue this branch before creating duplicate work.
