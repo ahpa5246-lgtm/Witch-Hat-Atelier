@@ -64,4 +64,14 @@ GitHub Actions run 40220306603 established the intended RED result on test commi
 
 No production fix is included in this RED checkpoint. The next sequential step is the minimal history unlock described in the plan: keep closed-ring drawing input locked, but disable Undo only when the stroke store is empty. GREEN browser evidence is still required before this stage can be called complete.
 
+### Undo/redo activation continuity: GREEN evidence, 2026-10-25
+
+The minimal production repair is commit `38a6f12ec20417be8d5e9877eb81024d0ab3444f`: closed-ring drawing and pointer capture remain locked, while Undo is disabled only when the stroke store is empty. No parser, compiler, storage schema, recognition threshold, or visual styling changed. Local preflight passed all 40 Node tests, the Vite 6.4.4 production build, and `git diff --check`.
+
+GitHub Actions run 40224872367 passed on that commit: dependency installation, all 40 Node tests, production build, Chromium installation, and the browser journeys were green. Playwright reported five passes and three intentional project skips. The new real-browser journey proved the deterministic Fire seal was `Active spell`, exposed an active Fire SpellIR, and applied `portal-active`; Undo returned it to `Prepared`, removed the activation treatment, and reduced the persisted stroke count by one; Redo restored the active Fire state and original count; a real page reload preserved the restored active state and browser-local count.
+
+Artifact `browser-evidence-356753f6fa363354d68a961872d1fd404918b31c` (ID 12611096173; 1,060,996 bytes; SHA-256 `930709b36281961225e54cb74827d6773e1f928a1a30d1a51cb26b7b0873969d`) contains the Playwright report and screenshots. The `restored-active-spell.png` frame was inspected and shows the Fire manifestation, active-state diagnostics, and an enabled Undo control after reload. This closes only the named pointer-driven activation/history/persistence boundary.
+
+Remaining gaps are explicit: keyboard-operated history coverage is absent; classifier accuracy beyond the deterministic Fire fixture is not established; invalid closed seals do not yet have their own browser history journey; and the sparse Field guide hierarchy, final art direction, and complete comparative visual-quality gate remain open. None of those gaps is release-approved by this result.
+
 Rollback: revert this milestone branch before merge. Do not merge or deploy automatically. Future runs must inspect open PRs and continue this branch before creating duplicate work.
