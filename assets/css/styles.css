@@ -1086,3 +1086,30 @@ body:not(.sigil-maker-page) .app-shell {
   }
 
 }
+
+/* Separate drawing from reference browsing; preserve canvas dimensions on return. */
+[hidden] { display: none !important; }
+.workspace-nav { display: flex; gap: 12px; padding: 16px 24px; background: var(--panel); border-bottom: 1px solid var(--panel-line); }
+.workspace-nav button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+.workspace:not(.reference-mode) { grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); }
+.workspace.reference-mode { grid-template-columns: minmax(0, 1fr); }
+.reference-mode .dictionary-panel { width: 100%; max-width: 1100px; margin-inline: auto; }
+button:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+@media (max-width: 760px) {
+  .workspace:not(.reference-mode) {
+    grid-template-columns: 1fr;
+  }
+
+  .workspace:not(.reference-mode) .canvas-panel {
+    order: -1;
+  }
+
+  .workspace:not(.reference-mode) .canvas-hint {
+    color: var(--ink);
+    background: rgba(255, 247, 219, 0.9);
+    border: 1px solid rgba(36, 27, 22, 0.18);
+    border-radius: 6px;
+    padding: 10px 12px;
+    box-shadow: 0 6px 18px rgba(36, 27, 22, 0.12);
+  }
+}
