@@ -1,11 +1,41 @@
 # Witch Hat Atelier Spell Simulator
 
+## Download, setup and project overview
+
+A fan-made browser spell-drawing simulator.
+
+Ring detection; symbol recognition; spell building; local drawing interaction.
+
+![Project workflow illustration](docs/project-overview.svg)
+
+### Running application
+
+![Actual browser capture at 1440 × 1000](docs/application.webp)
+
+Actual local browser capture from this maintenance pass; a screenshot alone does not verify every feature.
+
+[Download source ZIP](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/archive/refs/heads/main.zip) · [Changes and branches](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/branches) · [Verification notes](docs/QUALITY_REVIEW.md)
+
+The ZIP contains source code. Installation steps and external runtime requirements are listed below.
+
+```bash
+git clone https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier.git
+cd Witch-Hat-Atelier
+```
+
+From the repository directory:
+
+```text
+npm install
+npm run dev
+```
+
+The diagram is a project illustration. Test results and runtime limitations are recorded in [the review](docs/QUALITY_REVIEW.md); it is not a production-readiness certification.
+
+
 A fan-made browser-based spell drawing simulator inspired by *[Witch Hat Atelier](https://en.wikipedia.org/wiki/Witch_Hat_Atelier)*.
 
-<div align="center">
-  <img src="./assets/demo.gif" width="720"/>
-  <p>Try here: <a href="https://ytnrvdf.github.io/wha-spell-simulator">https://ytnrvdf.github.io/wha-spell-simulator</a></p>
-</div>
+
 
 Video: https://youtu.be/zVWYW0K3ikg
 
