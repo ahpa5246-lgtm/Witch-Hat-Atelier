@@ -31,6 +31,61 @@ async function drawStroke(page, canvas) {
   await page.mouse.up();
 }
 
+async function seedActiveFireDraft(page) {
+  await page.goto("/");
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+
+  const strokeCount = await page.evaluate(async (draftKey) => {
+    const canvas = document.querySelector("#glyphCanvas");
+    const sigils = await fetch("/src/dictionary/sigils.json").then((response) => response.json());
+    const fire = sigils.find((entry) => entry.id === "fire");
+    if (!canvas || !fire) throw new Error("Fire fixture is unavailable");
+
+    const center = { x: canvas.width / 2, y: canvas.height / 2 };
+    const radius = Math.min(canvas.width, canvas.height) * 0.36;
+    const sigilScale = radius * 0.4;
+    let timestamp = 0;
+    const storedStroke = (points) => ({
+      points: points.map((point) => ({ ...point, pressure: 0.5, t: timestamp++ }))
+    });
+    const arc = (startDeg, endDeg, steps) =>
+      Array.from({ length: steps + 1 }, (_, index) => {
+        const degrees = startDeg + (endDeg - startDeg) * (index / steps);
+        const radians = degrees * Math.PI / 180;
+        return {
+          x: center.x + Math.cos(radians) * radius,
+          y: center.y + Math.sin(radians) * radius
+        };
+      });
+
+    const openRing = storedStroke(arc(25, 335, 160));
+    const fireSigil = fire.strokeTemplate.strokes
+      .filter((points) => points.length >= 2)
+      .map((points) => storedStroke(points.map((point) => ({
+        x: center.x + (point.x - 0.5) * sigilScale,
+        y: center.y + (point.y - 0.5) * sigilScale
+      }))));
+    const closingArc = storedStroke(arc(335, 385, 32));
+    const strokes = [openRing, ...fireSigil, closingArc];
+
+    localStorage.setItem(draftKey, JSON.stringify({
+      version: 1,
+      width: canvas.width,
+      height: canvas.height,
+      strokes
+    }));
+    return strokes.length;
+  }, DRAFT_KEY);
+
+  await page.reload();
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+  return strokeCount;
+}
+
+async function readSpellIR(page) {
+  return page.locator("#irPanel").evaluate((panel) => JSON.parse(panel.dataset.rawJson));
+}
+
 test("drawing survives guide navigation and a real page reload", async ({ page }, testInfo) => {
   await page.goto("/");
   await expect(page.locator("#statusValue")).not.toHaveText("Loading");
@@ -61,6 +116,48 @@ test("drawing survives guide navigation and a real page reload", async ({ page }
     return draft?.strokes?.length ?? 0;
   }, DRAFT_KEY)).toBe(1);
   await page.screenshot({ path: testInfo.outputPath("restored-studio.png"), fullPage: true });
+});
+
+test("undo and redo keep activation, diagnostics, and the local draft synchronized", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop", "desktop activation acceptance only");
+
+  const strokeCount = await seedActiveFireDraft(page);
+  const status = page.locator("#statusValue");
+  const surface = page.locator(".canvas-shell");
+  const undo = page.getByRole("button", { name: "Undo" });
+
+  await expect(status).toHaveText("Active spell");
+  await expect(surface).toHaveClass(/portal-active/);
+  expect(await readSpellIR(page)).toMatchObject({ active: true, prepared: false, element: "fire" });
+  await expect(undo).toBeEnabled();
+
+  await undo.click();
+  await expect(status).toHaveText("Prepared spell");
+  await expect(surface).not.toHaveClass(/portal-active/);
+  expect(await readSpellIR(page)).toMatchObject({ active: false, prepared: true, element: "fire" });
+  await expect.poll(() => page.evaluate((key) => {
+    const draft = JSON.parse(localStorage.getItem(key) || "null");
+    return draft?.strokes?.length ?? 0;
+  }, DRAFT_KEY)).toBe(strokeCount - 1);
+
+  await page.getByRole("button", { name: "Redo" }).click();
+  await expect(status).toHaveText("Active spell");
+  await expect(surface).toHaveClass(/portal-active/);
+  expect(await readSpellIR(page)).toMatchObject({ active: true, prepared: false, element: "fire" });
+  await expect.poll(() => page.evaluate((key) => {
+    const draft = JSON.parse(localStorage.getItem(key) || "null");
+    return draft?.strokes?.length ?? 0;
+  }, DRAFT_KEY)).toBe(strokeCount);
+
+  await page.reload();
+  await expect(status).toHaveText("Active spell");
+  await expect(surface).toHaveClass(/portal-active/);
+  expect(await readSpellIR(page)).toMatchObject({ active: true, prepared: false, element: "fire" });
+  await expect.poll(() => page.evaluate((key) => {
+    const draft = JSON.parse(localStorage.getItem(key) || "null");
+    return draft?.strokes?.length ?? 0;
+  }, DRAFT_KEY)).toBe(strokeCount);
+  await page.screenshot({ path: testInfo.outputPath("restored-active-spell.png"), fullPage: true });
 });
 
 test("narrow studio starts with the complete drawing surface in the first viewport", async ({ page }, testInfo) => {
