@@ -54,4 +54,14 @@ The Senior Skills example visual gate was run and correctly returned BLOCKED_UNV
 ## Next acceptance boundary
 The canvas-first narrow-layout defect and helper-contrast defect are verified at the code commit above. The next separate browser stage is recognition and activation after undo/redo, including evidence that history changes update diagnostics/effects without corrupting the browser-local draft. Keyboard coverage, the sparse Field guide hierarchy, final art direction and complete comparative visual QA remain open and must not be inferred from this milestone.
 
+### Undo/redo activation continuity: RED evidence, 2026-10-25
+
+The bounded design and implementation plan are recorded in `docs/superpowers/specs/2026-10-25-undo-redo-activation-design.md` and `docs/superpowers/plans/2026-10-25-undo-redo-activation.md`. The browser contract seeds a deterministic seal from a hand-defined open ring, the repository's real Fire sigil template, and a final closing arc. It then observes the real status, portal-active treatment, diagnostic SpellIR, browser-local stroke count, Undo, Redo and reload behavior. No parser/compiler mock or production test hook is used.
+
+Local preflight on the test-only change passed all 40 Node tests and the Vite 6.4.4 production build; Playwright discovered eight project cases. Local Chromium execution remained unavailable because this environment received a zero-byte browser archive, so the remote browser run is the execution authority.
+
+GitHub Actions run 40220306603 established the intended RED result on test commit `1d62b12a4b8072719b44f10ec42452314ff8bd13`. Dependency installation, all 40 Node tests, production build and Chromium installation passed. The seeded seal reached `Active spell`, applied `portal-active`, and exposed an active Fire SpellIR before the new assertion. The browser journey then failed twice at `expect(undo).toBeEnabled()` because the real button remained disabled. The remaining existing browser coverage passed: four passes and three intentional project skips. Artifact 12608732304 (`browser-evidence-b69c2bca1b7736736945353cb40db008dcb06d89`, 8,061,530 bytes, SHA-256 `dd51f088a3491e726a2f679470b833a45c3957361fe301eca6a62a204a59452c`) retains the failure report and traces.
+
+No production fix is included in this RED checkpoint. The next sequential step is the minimal history unlock described in the plan: keep closed-ring drawing input locked, but disable Undo only when the stroke store is empty. GREEN browser evidence is still required before this stage can be called complete.
+
 Rollback: revert this milestone branch before merge. Do not merge or deploy automatically. Future runs must inspect open PRs and continue this branch before creating duplicate work.
