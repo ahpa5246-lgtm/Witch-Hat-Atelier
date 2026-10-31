@@ -75,3 +75,26 @@ Artifact `browser-evidence-356753f6fa363354d68a961872d1fd404918b31c` (ID 1261109
 Remaining gaps are explicit: keyboard-operated history coverage is absent; classifier accuracy beyond the deterministic Fire fixture is not established; invalid closed seals do not yet have their own browser history journey; and the sparse Field guide hierarchy, final art direction, and complete comparative visual-quality gate remain open. None of those gaps is release-approved by this result.
 
 Rollback: revert this milestone branch before merge. Do not merge or deploy automatically. Future runs must inspect open PRs and continue this branch before creating duplicate work.
+
+## 2026-10-31 — keyboard drawing history and comparative inspection
+
+### Implementation
+Added editor-level history shortcuts through the existing Undo/Redo controls: `Ctrl+Z` / `Cmd+Z` for Undo, `Ctrl+Shift+Z` / `Cmd+Shift+Z` and `Ctrl+Y` / `Cmd+Y` for Redo. Shortcuts are ignored when focus is in an input, textarea, select, or editable content. The buttons now expose matching `aria-keyshortcuts`. Recognition, stroke storage format, drawing capture, and spell compilation were not changed.
+
+### Verification
+- Implementation commit: `1b143dd77d6eb1eef976092734e5ad6214494345`.
+- GitHub Actions run [41225537152](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41225537152): success.
+- `npm test`: 40 passed, 0 failed, 0 skipped.
+- `npm run build`: success; 54 modules transformed.
+- Playwright: 7 passed, 3 intentionally skipped across desktop 1280×900 and narrow 760×900. The new keyboard-history journey passed in both projects and verified that Undo/Redo changes both the rendered canvas and the saved local draft.
+- Browser artifact: [13051980958](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41225537152/artifacts/13051980958), SHA-256 `615ce86d3e69b91dbc440590af69db380e96dd5417fcd8d85a7b119013a62676`. The artifact is bound to implementation commit `1b143dd`; desktop/narrow studio and field-guide screenshots plus the active-spell screenshot were inspected.
+
+### Comparative product review — 2026-10-31
+- [Excalidraw](https://plus.excalidraw.com/) — released direct canvas product. Its official editor image shows a dominant canvas, a compact top tool strip, and contextual properties. The Atelier's canvas-first narrow layout follows the right hierarchy, while its desktop fixed control rail is more persistent than Excalidraw's contextual panels.
+- [tldraw](https://tldraw.dev/) — released direct canvas product/SDK. Its official product page documents built-in undo/redo, keyboard navigation, adaptive interfaces, and a compact drawing toolbar. The new keyboard history closes a concrete parity gap; selection, pan/zoom, and richer canvas affordances remain outside this milestone.
+- [Witch Hat Atelier official anime site](https://tongari-anime.com/en/) — visual reference only. Its gold ornamental marks and hand-engraved book illustration support a restrained paper-and-ink direction. No official artwork, marks, or layouts were copied.
+
+### Remaining gaps and limits
+The inspected narrow Field Guide still leaves a large unused area below two sample-spell entries; this is a content/hierarchy gap, not a color problem. The reference workspace needs a fuller, task-oriented guide before the visual gate can pass. The current browser suite tests Control-based shortcuts on Linux; Meta-key behavior is implemented and declared but has not been exercised on macOS. Editable-target exclusion is implemented but has no dedicated browser test. Keyboard tab order, screen-reader announcement, invalid closed-seal history, and broader classifier accuracy remain unverified. This milestone does not pass the full competitive visual gate or authorize release.
+
+The CI run also reports GitHub's Node 20 action-runtime deprecation warning for checkout/setup-node/upload-artifact; it does not fail the product checks and remains a workflow-maintenance item.
