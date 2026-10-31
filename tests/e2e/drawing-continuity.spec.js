@@ -160,6 +160,41 @@ test("undo and redo keep activation, diagnostics, and the local draft synchroniz
   await page.screenshot({ path: testInfo.outputPath("restored-active-spell.png"), fullPage: true });
 });
 
+test("keyboard shortcuts keep undo and redo synchronized with the drawing draft", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+
+  const canvas = page.locator("#glyphCanvas");
+  const blankSignature = await canvasSignature(canvas);
+  await drawStroke(page, canvas);
+
+  const savedStrokeCount = () => page.evaluate((key) => {
+    const draft = JSON.parse(localStorage.getItem(key) || "null");
+    return draft?.strokes?.length ?? 0;
+  }, DRAFT_KEY);
+
+  await expect.poll(savedStrokeCount).toBe(1);
+  await page.keyboard.press("Control+z");
+  await expect.poll(savedStrokeCount).toBe(0);
+  await expect.poll(() => canvasSignature(canvas)).toBe(blankSignature);
+
+  await page.keyboard.press("Control+Shift+z");
+  await expect.poll(savedStrokeCount).toBe(1);
+  await expect.poll(() => canvasSignature(canvas)).not.toBe(blankSignature);
+
+  await page.keyboard.press("Control+z");
+  await expect.poll(savedStrokeCount).toBe(0);
+  await page.keyboard.press("Control+y");
+  await expect.poll(savedStrokeCount).toBe(1);
+  await expect.poll(() => canvasSignature(canvas)).not.toBe(blankSignature);
+
+  await expect(page.locator("#undoButton")).toHaveAttribute("aria-keyshortcuts", "Control+Z Meta+Z");
+  await expect(page.locator("#redoButton")).toHaveAttribute(
+    "aria-keyshortcuts",
+    "Control+Shift+Z Control+Y Meta+Shift+Z Meta+Y"
+  );
+});
+
 test("narrow studio starts with the complete drawing surface in the first viewport", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "narrow", "narrow acceptance only");
 

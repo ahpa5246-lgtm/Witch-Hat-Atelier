@@ -122,6 +122,30 @@ function setupControls() {
     recompute();
   });
 
+  document.addEventListener("keydown", (event) => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) {
+      return;
+    }
+
+    const target = event.target;
+    if (
+      target instanceof HTMLElement &&
+      (target.isContentEditable || target.closest("input, textarea, select, [contenteditable='true']"))
+    ) {
+      return;
+    }
+
+    const key = event.key.toLowerCase();
+    const isUndo = key === "z" && !event.shiftKey;
+    const isRedo = (key === "z" && event.shiftKey) || (key === "y" && !event.shiftKey);
+    if (!isUndo && !isRedo) {
+      return;
+    }
+
+    event.preventDefault();
+    (isUndo ? elements.undoButton : document.getElementById("redoButton")).click();
+  });
+
   elements.clearButton.addEventListener("click", () => {
     store.clear();
     previousRing = null;
