@@ -98,3 +98,16 @@ Added editor-level history shortcuts through the existing Undo/Redo controls: `C
 The inspected narrow Field Guide still leaves a large unused area below two sample-spell entries; this is a content/hierarchy gap, not a color problem. The reference workspace needs a fuller, task-oriented guide before the visual gate can pass. The current browser suite tests Control-based shortcuts on Linux; Meta-key behavior is implemented and declared but has not been exercised on macOS. Editable-target exclusion is implemented but has no dedicated browser test. Keyboard tab order, screen-reader announcement, invalid closed-seal history, and broader classifier accuracy remain unverified. This milestone does not pass the full competitive visual gate or authorize release.
 
 The CI run also reports GitHub's Node 20 action-runtime deprecation warning for checkout/setup-node/upload-artifact; it does not fail the product checks and remains a workflow-maintenance item.
+
+
+## 2026-10-31 — editable-target keyboard-history regression
+
+### Implementation and verification
+- Test commit: `36f1ab21b990f38ef5703d406f30341b054a14d6`.
+- Added a real-browser regression for the document-level history shortcuts while focus is in an `input`, `textarea`, `select`, or `contenteditable` target.
+- The test begins with a real drawn stroke, checks that Ctrl+Z does not invoke application Undo from any editable target, then creates a redoable state and checks that Ctrl+Shift+Z and Ctrl+Y do not invoke application Redo. It verifies both the persisted stroke count and rendered canvas remain unchanged.
+- GitHub Actions run [41230849629](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41230849629) passed on the test commit: all 40 Node tests passed, the Vite production build transformed 54 modules, and Playwright reported 9 passed / 3 intentional project skips across desktop 1280×900 and narrow 760×900. The new editable-target test passed in both projects.
+- Browser artifact [13053512602](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41230849629/artifacts/13053512602), SHA-256 `f4a029f3c18883ed55aaf2923e5ad06a3c09e9fdaf378391a738841af1c1f577`. The desktop/narrow Field guide and restored-studio screenshots were inspected. The narrow studio keeps the drawing surface in the first viewport; the Field guide still has substantial unused vertical space below its two sample-spell entries.
+
+### Remaining acceptance gaps
+The shortcut exclusion is now covered for the four editable target classes on Chromium/Linux. Meta-key behavior remains unverified on macOS. Keyboard tab order and screen-reader announcements, invalid closed-seal history, broader classifier accuracy, and the sparse Field guide hierarchy remain open. This is a focused keyboard regression milestone, not a full accessibility or visual-quality pass.
