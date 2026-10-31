@@ -247,3 +247,81 @@ test("narrow canvas instructions meet WCAG AA contrast", async ({ page }, testIn
 
   expect(ratio).toBeGreaterThanOrEqual(4.5);
 });
+
+
+test("editable fields do not consume drawing history shortcuts", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+
+  const canvas = page.locator("#glyphCanvas");
+  const blankSignature = await canvasSignature(canvas);
+  await drawStroke(page, canvas);
+
+  const savedStrokeCount = () => page.evaluate((key) => {
+    const draft = JSON.parse(localStorage.getItem(key) || "null");
+    return draft?.strokes?.length ?? 0;
+  }, DRAFT_KEY);
+
+  await expect.poll(savedStrokeCount).toBe(1);
+  await expect.poll(() => canvasSignature(canvas)).not.toBe(blankSignature);
+
+  await page.evaluate(() => {
+    window.__historyShortcutClicks = { undo: 0, redo: 0 };
+    document.querySelector("#undoButton").addEventListener("click", () => {
+      window.__historyShortcutClicks.undo += 1;
+    });
+    document.querySelector("#redoButton").addEventListener("click", () => {
+      window.__historyShortcutClicks.redo += 1;
+    });
+
+    const input = document.createElement("input");
+    input.id = "history-shortcut-input";
+    input.type = "text";
+
+    const textarea = document.createElement("textarea");
+    textarea.id = "history-shortcut-textarea";
+
+    const select = document.createElement("select");
+    select.id = "history-shortcut-select";
+    select.add(new Option("First", "first"));
+    select.add(new Option("Second", "second"));
+
+    const editable = document.createElement("div");
+    editable.id = "history-shortcut-editable";
+    editable.contentEditable = "true";
+    editable.textContent = "Editable notes";
+
+    document.body.append(input, textarea, select, editable);
+  });
+
+  const editableTargets = [
+    "#history-shortcut-input",
+    "#history-shortcut-textarea",
+    "#history-shortcut-select",
+    "#history-shortcut-editable"
+  ];
+
+  for (const selector of editableTargets) {
+    await page.locator(selector).focus();
+    await page.keyboard.press("Control+z");
+    await expect.poll(() => page.evaluate(() => window.__historyShortcutClicks.undo)).toBe(0);
+    await expect.poll(savedStrokeCount).toBe(1);
+    await expect.poll(() => canvasSignature(canvas)).not.toBe(blankSignature);
+  }
+
+  await page.locator("#undoButton").click();
+  await expect.poll(savedStrokeCount).toBe(0);
+  await page.evaluate(() => {
+    window.__historyShortcutClicks.undo = 0;
+    window.__historyShortcutClicks.redo = 0;
+  });
+
+  for (const selector of editableTargets) {
+    await page.locator(selector).focus();
+    await page.keyboard.press("Control+Shift+z");
+    await page.keyboard.press("Control+y");
+    await expect.poll(() => page.evaluate(() => window.__historyShortcutClicks.redo)).toBe(0);
+    await expect.poll(savedStrokeCount).toBe(0);
+    await expect.poll(() => canvasSignature(canvas)).toBe(blankSignature);
+  }
+});
