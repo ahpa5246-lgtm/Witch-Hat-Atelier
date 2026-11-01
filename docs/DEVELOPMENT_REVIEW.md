@@ -111,3 +111,28 @@ The CI run also reports GitHub's Node 20 action-runtime deprecation warning for 
 
 ### Remaining acceptance gaps
 The shortcut exclusion is now covered for the four editable target classes on Chromium/Linux. Meta-key behavior remains unverified on macOS. Keyboard tab order and screen-reader announcements, invalid closed-seal history, broader classifier accuracy, and the sparse Field guide hierarchy remain open. This is a focused keyboard regression milestone, not a full accessibility or visual-quality pass.
+
+
+## 2026-11-01 — accessible reference and diagnostic tabs
+
+### Implementation
+- Code commit: 5baba384918d699bf652477a925d47eec090c234.
+- Replaced click-only panel switching with three named ARIA tablists: Reference workspaces, Dictionary entries, and Diagnostic views.
+- Each tab now exposes aria-selected, aria-controls, and a roving tabindex; each panel exposes role=tabpanel, aria-labelledby, and a focusable entry point.
+- Arrow keys move between tabs, Home/End select the first/last tab, and horizontal direction reverses when the tablist is inside an RTL subtree. Pointer activation remains available.
+- Spell state now uses a polite, atomic role=status live region so state changes have an announcement target.
+
+### Verification
+- GitHub Actions run [41282866465](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41282866465) passed on the implementation commit.
+- npm test: 40 passed, 0 failed, 0 skipped.
+- npm run build: success; Vite transformed 54 modules.
+- Playwright: 11 passed and 3 intentional project skips across desktop 1280×900 and narrow 760px layouts. The new real-Chromium journey opened Field guide with Enter, switched the root panel with ArrowRight/ArrowLeft, navigated Sample Spells/Sigils/Signs with ArrowRight and Home/End, then navigated Parser/AST/IR. It checked focus, selected state, panel visibility, and live-region attributes.
+- Browser artifact [13074421299](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41282866465/artifacts/13074421299), 1,284,148 bytes, SHA-256 6dea3231462258e4b731260a838d304eecaea5c0844bcb35784e65718be14acb. Desktop 1280×900 and narrow 760×1041 full-page keyboard-navigation screenshots were inspected; the focused IR tab has a visible focus indicator and the selected diagnostic panel is exposed.
+
+### Comparative review — direct products and official visual reference
+- [Excalidraw](https://plus.excalidraw.com/) and its [live editor](https://excalidraw.com/) remain the direct canvas benchmark: the official product emphasizes a dominant infinite canvas, simple tool access, reusable libraries, and quick start. The Atelier remains a specialized spell-construction tool rather than a general whiteboard; the present change improves access to its reference/diagnostic workflow but does not add pan/zoom, selection, or export parity.
+- [tldraw Editor](https://tldraw.dev/sdk-features/editor) and its [accessibility guidance](https://tldraw.dev/sdk-features/accessibility) document history, focus, keyboard navigation, live-region announcements, and shape reading order. This milestone adopts correct tab semantics and a status live region for the existing interface; the drawing canvas itself is still pointer-first and does not yet expose keyboard navigation across strokes.
+- [Witch Hat Atelier official anime site](https://tongari-anime.com/en/) is used only as an official franchise visual reference for editorial hierarchy and restrained paper/ink presentation. No official artwork, marks, or layout assets were copied.
+
+### Remaining acceptance gaps
+The browser test proves keyboard operation of the three tab groups and verifies the live-region markup; it does not prove actual NVDA or VoiceOver speech output. RTL arrow behavior is implemented but not exercised by this English-only app test, and Meta-key history shortcuts remain unverified on macOS. The Field guide still contains only two sample-spell entries and leaves substantial unused vertical space; this is a content/hierarchy defect, not a color defect. Keyboard drawing, invalid closed-seal history, broader classifier accuracy, and final art direction remain open. The complete comparative visual gate remains blocked; this milestone is not release approval.
