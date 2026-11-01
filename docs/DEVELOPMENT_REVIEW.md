@@ -224,3 +224,22 @@ Rollback: revert the keyboard-drawing commits on this existing branch; no merge 
 - Keep PR #1 Draft. No merge or deployment.
 
 Rollback: revert the RTL browser test and this review entry on the existing branch.
+
+
+## 2026-11-01 — identify the remaining moderate npm advisory
+
+### Observed blocker
+- The current PR #1 head `29a6fe804fbd7df8de64421a3ca7736bfb6b4227` passes its CI job, but the `npm ci` log reports one moderate-severity vulnerability.
+- The workflow log exposes only the count and generic `npm audit fix` suggestion; it does not identify the affected package, advisory range, or whether a non-breaking patched version exists.
+- The current execution container cannot resolve the npm registry, so a local `npm audit` cannot be completed reliably. No automatic dependency update is justified from the summary alone.
+
+### Bounded diagnostic change
+- Added a CI step that stores the full `npm audit --json` response as `artifacts/npm-audit.json`.
+- The audit step is non-blocking for the existing test/build/browser job; it does not run `npm audit fix`, change the lockfile, or suppress the existing npm install warning.
+- The browser-evidence artifact now also retains the machine-readable audit report for inspection.
+
+### Validation state
+- This commit is the diagnostic change only. The new current-head CI run and audit artifact must complete before the advisory can be identified.
+- Do not mark the advisory resolved, do not upgrade packages speculatively, and do not treat a green product test job as a clean dependency audit.
+
+Next step: inspect the exact advisory name, vulnerable range, dependency path, and fixed version from the uploaded JSON; apply only the smallest compatible lockfile update if the advisory is confirmed and a patched version is available.
