@@ -270,9 +270,18 @@ Next step: inspect the exact advisory name, vulnerable range, dependency path, a
 - Tightened the retained `npm audit --json` gate from high/critical to moderate-or-higher. The JSON report remains an uploaded CI artifact; a missing vulnerability summary or any moderate/high/critical finding now fails the job.
 - The advisory is [GHSA-8g5g-mxqh-grgj / CVE-2026-118662](https://github.com/advisories/GHSA-8g5g-mxqh-grgj), affecting Vite 6.4.4 and patched in 6.4.5. The current dev script binds to `127.0.0.1`, which limits network exposure; the dependency finding is still remediated rather than waived.
 
-### Validation state
-- Code commit: pending creation on the existing PR #1 branch.
-- Current-head `npm ci`, full `npm audit`, Node tests, Vite production build, desktop/narrow Playwright journeys, and screenshot artifact inspection are pending CI.
-- Do not mark the advisory cleared until the current-head report shows zero vulnerabilities and the full existing suite passes. The Field guide's sparse two-entry content hierarchy, Arabic screen-reader coverage, and complete comparative visual-quality gate remain separate open items.
+### Current-head verification
+- Implementation commit: `cdb0a366213b9d1674c088a0d19ebe38c5b56a99`.
+- GitHub Actions run [41342436135](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41342436135) passed on that exact PR #1 head.
+- `npm ci`: passed and reported 0 vulnerabilities. The retained `npm audit --json --audit-level=moderate` report records `info=0, low=0, moderate=0, high=0, critical=0, total=0`; the workflow now fails on any moderate-or-higher finding.
+- Node suite: 40 passed. Vite 6.4.5 production build: passed (54 modules transformed).
+- Playwright: 15 passed and 3 intentional project skips across desktop 1280×900 and narrow 760×900; all executed browser journeys passed.
+- Artifact [13098121606](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41342436135/artifacts/13098121606), 1,859,105 bytes, archive SHA-256 `53077a13fcc6b75cec7724a4c0ccdc34814b31ec8c1e4235e8ef6487a8023bdf`, contains the browser screenshots and machine-readable audit report. I downloaded the archive, parsed the report, and inspected the desktop/narrow keyboard-drawing captures and the narrow Field guide capture. The keyboard-drawing surface and focused cursor remain visible; the Field guide still contains only two sample spells with substantial unused space. The browser suite also checks the no-horizontal-overflow condition at the narrow viewport.
+- GitHub Actions emitted the existing Node 20 action-runtime deprecation warning for checkout/setup-node/upload-artifact; the job passed and this is separate maintenance work.
+
+### Remaining gaps
+- The Vite 6.4.4 moderate advisory is remediated in the committed lockfile; the current-head audit is clean. The default dev script remains loopback-bound at `127.0.0.1`.
+- The Field guide's two-entry content hierarchy and unused vertical space remain a product/content gap, not a color issue.
+- Manual NVDA/VoiceOver output, broader Arabic localization/mixed-direction behavior, and the complete comparative visual-quality gate remain unverified. The successful dependency/functional CI is not a visual-quality approval.
 
 Rollback: revert the dependency, lockfile and audit-gate changes on this existing draft branch; no merge or deployment.
