@@ -285,3 +285,37 @@ Next step: inspect the exact advisory name, vulnerable range, dependency path, a
 - Manual NVDA/VoiceOver output, broader Arabic localization/mixed-direction behavior, and the complete comparative visual-quality gate remain unverified. The successful dependency/functional CI is not a visual-quality approval.
 
 Rollback: revert the dependency, lockfile and audit-gate changes on this existing draft branch; no merge or deployment.
+
+## 2026-11-01 — Task-oriented Field guide workflow
+
+### Observed defect and journey split
+- The existing Field guide exposed two validated sample layouts but gave no task-oriented explanation of how to assemble a supported seal. The two cards occupied only a small part of the desktop reference surface; the remaining space did not help the user complete a task.
+- Keep the Drawing studio as the canvas-first creation and inspection destination. Keep the Field guide as a separate reference destination. The guide now teaches the supported sequence and lets the user return to the studio through the existing workspace navigation.
+
+### Comparator review (official sources checked 2026-11-01)
+- [Excalidraw](https://plus.excalidraw.com/) presents a deliberately simple canvas-first whiteboard, ready-to-use libraries, and shortcut-led creation. Transferable decision: preserve an obvious drawing surface and keep reference material out of the primary canvas. Trade-off: Excalidraw's general-purpose infinite canvas and collaboration breadth are outside this prototype's scope.
+- [tldraw](https://tldraw.com/) and its [official editor documentation](https://tldraw.dev/sdk-features/editor) treat tools, history, selection, camera and input as explicit editor systems. Transferable decision: keep creation controls and reference browsing as distinct user tasks. Trade-off: its extensible editor architecture would be unnecessary weight for this bounded seal compiler.
+- The [official Witch Hat Atelier anime site](https://tongari-anime.com/en/) is the aspirational visual reference for the story's editorial/high-fantasy tone only. No official illustrations, logos, screenshots, or other copyrighted assets were copied into the application.
+
+### Implementation
+- Commits: `b2f3c5d8d998c72d9c345cdd2881a79bc93aab7d` (semantic guide structure), `060c0c01b57a16118cb477fd2c21e0270efd661a` (responsive composition), `d8edc6c270e1f7db8e46055aa4754b23462e54d2` (journey test), and `a38b20c4b9cc32260f18b06bbcd514fb06eb6ee4` (case-correct test assertion).
+- The Field guide now pairs a four-step construction sequence with the two real sample layouts at desktop width; it stacks the sequence above the examples at 760px. The sequence is derived from the current parser/compiler and dictionary: one ring, one recognized primary sigil, optional supported signs, then close and inspect. It states the prototype limits rather than inventing additional spell canon.
+- No new external assets, fonts, packages, parser rules, or spell definitions were added.
+
+### Current-head verification
+- Exact implementation/test head: `a38b20c4b9cc32260f18b06bbcd514fb06eb6ee4`.
+- GitHub Actions run [41348345540](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41348345540) passed on that exact head.
+- `npm ci`: passed; 0 vulnerabilities. The uploaded audit report records info=0, low=0, moderate=0, high=0, critical=0, total=0.
+- Node suite: 40 passed. Vite production build: passed (54 modules transformed).
+- Playwright: 17 passed, 3 intentional project skips, across desktop 1280×900 and narrow 760×900.
+- The new browser journey opens the Field guide, verifies the four ordered steps and all supported dictionary groups (2 sample layouts, 5 sigils, 3 signs), checks the two-column/stacked layouts and horizontal overflow, then returns to the Drawing studio. The actual desktop and narrow screenshots were downloaded and inspected.
+- Evidence artifact [13099973462](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41348345540/artifacts/13099973462), 2,224,218 bytes, archive SHA-256 `033d26f88718d93069e579501d86461be779957c7903c8b0cfec034c576c8e20`. The archive contains `field-guide-workflow.png` for both tested surfaces and the machine-readable npm audit report.
+- The first browser run [41348179240](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41348179240) caught a case-sensitive assertion mismatch in the test text; the assertion was corrected in `a38b20c`, and the exact-head rerun above passed.
+- The workflow still emits a Node 20 `url.parse()` deprecation warning from its existing toolchain; it is not an npm advisory and did not fail this run.
+
+### Remaining gaps
+- The sample-spell library still contains only two validated examples. No additional examples were invented; expanding that content needs verified spell definitions.
+- Manual NVDA/VoiceOver output, real Arabic UI content and mixed-direction copy, 320px width, 200% zoom, and moderated usability testing remain unverified.
+- The formal `visual_quality_gate.py` implementation audit was not run in this environment. The screenshots and official comparator review are evidence for this bounded change, not a full visual-quality approval. The PR remains a draft.
+
+Rollback: revert the four commits listed above on the existing draft branch; no merge or deployment.
