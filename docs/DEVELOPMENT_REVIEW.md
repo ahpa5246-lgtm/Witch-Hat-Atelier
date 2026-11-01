@@ -166,3 +166,36 @@ The browser test proves keyboard operation of the three tab groups and verifies 
 - Keep PR #1 Draft. Do not mark this milestone `AWAITING_HUMAN_REVIEW` until current-head CI, actual browser evidence and the applicable accessibility review pass.
 
 Rollback: revert commits `b6ac924`, `619e3f9`, `2abdcf1`, `94aad38` and `2da37ef` on the existing branch. No merge or deployment.
+
+
+## 2026-11-01 — keyboard drawing path verified on the current PR head
+
+### Current-head CI
+- Reviewed the existing Draft PR #1 at branch head `e6014c84976c54205af755f2c7983968fbad3b73`; no new branch or PR was created.
+- GitHub Actions PR run [41317539704](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41317539704) completed successfully on that head. The `verify` job completed dependency installation, Node tests, production build, Chromium installation, browser journeys, and evidence upload.
+- `npm ci` installed 17 packages. The install output reported **one moderate-severity dependency advisory**; this workflow did not run a full `npm audit` report, so the affected package and remediation are not established here. Keep this as an unresolved dependency-maintenance item rather than silently treating it as cleared.
+- `npm test`: 40 passed, 0 failed, 0 skipped.
+- `npm run build`: passed; Vite transformed 54 modules.
+- Playwright: 13 passed and 3 intentional project skips. The new keyboard-drawing journey ran in the existing desktop 1280×900 and narrow 760×900 projects.
+- Browser artifact [13088430104](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41317539704/artifacts/13088430104), 1,705,885 bytes, SHA-256 `87dac5ec26978be18360fd9cfc710abd329b59d4d48e91368cb1e91ac375cc98`, is bound by workflow metadata to branch head `e6014c84976c54205af755f2c7983968fbad3b73`.
+
+### Actual keyboard-drawing journey
+- The real Chromium test focused the named canvas, moved the visible crosshair with arrow keys, used Shift+Arrow for larger movement, started and completed a stroke with Space, and cancelled an unfinished stroke with Escape.
+- The test verified that a completed keyboard stroke entered the existing stroke store and browser-local draft, changed the rendered canvas, and remained compatible with the existing Undo/Redo controls. It also verified cancellation without committing the unfinished stroke.
+- The desktop keyboard-drawing screenshot (1280×900) and narrow full-page screenshot (760×1322 from a 760×900 viewport) were downloaded from the artifact and inspected. The visible crosshair, focused canvas boundary, instructions, and drawing controls are present. The narrow layout keeps the canvas before the control panel.
+- The same artifact contains the desktop/narrow reference-tab and drawing-continuity screenshots. The narrow Field guide screenshot remains 760×900 and still shows only two sample-spell entries with substantial unused space below them.
+
+### Comparative review and decision
+- [Excalidraw live editor](https://excalidraw.com/) and its [official product page](https://plus.excalidraw.com/) remain the direct canvas references: the primary surface dominates, with compact tools and contextual controls. The Atelier retains its specialist canvas-first composition; this milestone adds an alternate input method rather than another competing toolbar.
+- [tldraw editor features](https://tldraw.dev/sdk-features/editor) and its [accessibility guidance](https://tldraw.dev/sdk-features/accessibility) remain the direct reference for keyboard-operable canvas workflows, history, focus and announcements. The new path covers stroke creation and history integration, not object selection, pan/zoom, stroke-by-stroke navigation, or full tldraw parity.
+- [Official Witch Hat Atelier anime site](https://tongari-anime.com/en/) remains a visual reference only for its editorial paper/ink treatment. No official artwork, logo, marks, or layout was copied.
+- Decision: preserve the current canvas-first layout and provide a minimal keyboard drawing path using the existing stroke and persistence model. Do not treat the feature as complete screen-reader support or as a visual redesign.
+
+### Remaining gaps and gate status
+- **Keyboard drawing CI is now green on the current PR head**; the earlier “validation pending” note above is superseded by this entry.
+- Actual NVDA/VoiceOver speech output, macOS Meta-key behavior, RTL arrow behavior, keyboard-only construction of a complete valid spell, and a broader classifier-accuracy set remain unverified.
+- The Field guide still has two sample spells and unused vertical space. This is a content/hierarchy gap; the next visual milestone should add validated task-oriented reference material or a deliberate empty-state explanation, not change colors.
+- The moderate dependency advisory reported by `npm ci` remains unidentified and unresolved pending a full audit report.
+- The full comparative visual-quality gate remains open. This milestone verifies one input journey and current-head CI; it does not authorize release, merge, or deployment.
+
+Rollback: revert the keyboard-drawing commits on this existing branch; no merge or deployment.
