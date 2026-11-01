@@ -201,7 +201,7 @@ Rollback: revert commits `b6ac924`, `619e3f9`, `2abdcf1`, `94aad38` and `2da37ef
 Rollback: revert the keyboard-drawing commits on this existing branch; no merge or deployment.
 
 
-## 2026-11-01 — RTL keyboard tab-navigation acceptance (validation pending)
+## 2026-11-01 — RTL keyboard tab-navigation acceptance
 
 ### Bounded test-only milestone
 - Starting PR #1 head: `68e519902212a18e66bdd62a797bee6fedabf1ff`.
@@ -209,14 +209,18 @@ Rollback: revert the keyboard-drawing commits on this existing branch; no merge 
 - The journey verifies reversed horizontal-arrow semantics (ArrowLeft advances and ArrowRight returns), Home/End behavior, focus movement, `aria-selected`, and the visible panel associated with each tab. It records desktop and narrow screenshots and checks that the RTL reference workspace does not create horizontal document overflow.
 - No production JavaScript, recognition, storage, or styling changed. This is an acceptance test for the RTL direction logic already implemented in `src/ui/tabs.js`.
 
-### Validation state
-- The test and this review entry are being committed to the existing Draft PR #1 branch.
-- Current-head GitHub Actions, Playwright results, and screenshot inspection are **pending**. Do not count the RTL acceptance as passed until the resulting run is complete and its artifact is inspected.
-- The existing direct-product comparison remains Excalidraw and tldraw, with the official Witch Hat Atelier anime site as an editorial visual reference. This test-only milestone does not change the design direction or pass the comparative visual-quality gate.
+### Current-head verification
+- Test commit: `44bbe82d928041d79c9fde9257b6167ab2ad09d5`.
+- GitHub Actions run [41328005998](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41328005998) passed on the exact PR #1 head. Dependency installation, Node tests, Vite production build, Chromium installation, browser journeys and evidence upload all completed.
+- Node suite: 40 passed, 0 failed, 0 skipped. Vite 6.4.4 production build succeeded.
+- Playwright: 15 passed, 3 intentional project skips across desktop 1280×900 and narrow 760×900. The new RTL journey passed in both projects.
+- Browser artifact [13092565451](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41328005998/artifacts/13092565451), 1,892,050 bytes; archive SHA-256 `b07ed5908409a64e4960304dda2f4bfb5608b53b259fafe773ada3c46d47c6f2`. I downloaded and inspected both `rtl-reference-tabs.png` captures. They show the selected tab and visible focus indicator in desktop and narrow layouts; the test also measured no horizontal overflow. The screenshots remain English-language content with document direction RTL; this is not Arabic-localization evidence.
+- `npm ci` still reports one moderate-severity dependency advisory. The workflow does not run a full `npm audit` report, so the affected package and remediation remain unidentified.
 
-### Remaining limits
-- This covers automated arrow-key direction and tab semantics in Chromium; it does not establish Arabic translation quality, mixed-direction identifiers, manual NVDA/VoiceOver speech output, or macOS behavior.
-- The Field guide still has two sample-spell entries and substantial unused vertical space. The moderate dependency advisory remains unidentified pending a full dependency audit.
+### Comparative review and remaining limits
+- The existing direct-product comparison remains Excalidraw and tldraw, with the official Witch Hat Atelier anime site as an editorial visual reference. This test-only milestone does not change the design direction or pass the comparative visual-quality gate.
+- Automated RTL arrow direction and tab semantics are covered in Chromium. Arabic translation quality, mixed-direction identifiers, manual NVDA/VoiceOver speech output, and macOS behavior remain unverified.
+- The Field guide still has two sample-spell entries and substantial unused vertical space. This is a content/hierarchy gap, not a palette issue.
 - Keep PR #1 Draft. No merge or deployment.
 
 Rollback: revert the RTL browser test and this review entry on the existing branch.
