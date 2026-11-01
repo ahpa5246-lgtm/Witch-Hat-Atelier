@@ -393,3 +393,56 @@ test("reference tabs support keyboard navigation and announce spell-state change
     fullPage: true
   });
 });
+
+test("keyboard drawing creates a saved stroke and supports cancel, undo, and redo", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+
+  const canvas = page.locator("#glyphCanvas");
+  await canvas.focus();
+  await expect(canvas).toBeFocused();
+  await expect(canvas).toHaveAttribute("role", "application");
+  await expect(canvas).toHaveAttribute("aria-label", "Spell drawing canvas");
+  await expect(canvas).toHaveAttribute(
+    "aria-keyshortcuts",
+    "ArrowUp ArrowDown ArrowLeft ArrowRight Space Escape"
+  );
+
+  const savedStrokeCount = () => page.evaluate((key) => {
+    const draft = JSON.parse(localStorage.getItem(key) || "null");
+    return draft?.strokes?.length ?? 0;
+  }, DRAFT_KEY);
+
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#keyboardCursor")).toBeVisible();
+  await expect(page.locator("#canvasHint")).not.toHaveClass(/hidden/);
+  await page.keyboard.press("Space");
+  await expect(page.locator("#drawingAssistStatus")).toHaveText(
+    "Keyboard stroke started. Use arrow keys to draw; press Space to finish or Escape to cancel."
+  );
+  const activeCursorSignature = await canvasSignature(canvas);
+
+  await page.keyboard.press("Shift+ArrowRight");
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("Space");
+
+  await expect.poll(savedStrokeCount).toBe(1);
+  await expect(page.locator("#drawingAssistStatus")).toHaveText("Keyboard stroke added.");
+  await expect.poll(() => canvasSignature(canvas)).not.toBe(activeCursorSignature);
+  await page.screenshot({
+    path: testInfo.outputPath("keyboard-drawing-studio.png"),
+    fullPage: true
+  });
+
+  await page.keyboard.press("Control+z");
+  await expect.poll(savedStrokeCount).toBe(0);
+  await page.keyboard.press("Control+Shift+z");
+  await expect.poll(savedStrokeCount).toBe(1);
+
+  await page.keyboard.press("Space");
+  await page.keyboard.press("ArrowUp");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#drawingAssistStatus")).toHaveText("Keyboard stroke cancelled.");
+  await expect.poll(savedStrokeCount).toBe(1);
+});
