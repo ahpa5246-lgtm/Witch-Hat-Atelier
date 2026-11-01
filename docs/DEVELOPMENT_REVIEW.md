@@ -137,3 +137,32 @@ The shortcut exclusion is now covered for the four editable target classes on Ch
 
 ### Remaining acceptance gaps
 The browser test proves keyboard operation of the three tab groups and verifies the live-region markup; it does not prove actual NVDA or VoiceOver speech output. RTL arrow behavior is implemented but not exercised by this English-only app test, and Meta-key history shortcuts remain unverified on macOS. The Field guide still contains only two sample-spell entries and leaves substantial unused vertical space; this is a content/hierarchy defect, not a color defect. Keyboard drawing, invalid closed-seal history, broader classifier accuracy, and final art direction remain open. The complete comparative visual gate remains blocked; this milestone is not release approval.
+
+## 2026-11-01 — keyboard-operated drawing path (validation pending)
+
+### Implementation on the existing PR branch
+- Added a focusable, named drawing surface with a local keyboard interaction contract: Arrow keys move a visible crosshair, Shift+Arrow moves in larger increments, Space starts/finishes a stroke, and Escape cancels the active stroke.
+- Keyboard strokes use the existing stroke store and draft persistence path. The preview is rendered on the same canvas; committed strokes flow through the existing parser/compiler recomputation. Too-short strokes are rejected by the same configured minimum-length threshold.
+- Added a polite live status region for start/finish/cancel feedback and a visible focus indicator. Pointer drawing remains unchanged; switching to pointer input or leaving the canvas cancels an unfinished keyboard stroke.
+- Existing undo/redo remains available after keyboard commits. No parser, recognition threshold, stored draft schema, or compiler behavior changed.
+- Commits on this branch: `b6ac924` (canvas semantics/instructions), `619e3f9` (element references), `2abdcf1` (focus/cursor styles), `94aad38` (keyboard cursor and stroke handling), and `2da37ef` (real-browser journey test).
+
+### Acceptance test added — not yet executed
+- Added a Playwright journey that focuses the actual canvas, moves the cursor, starts a stroke, draws with normal and accelerated arrow movement, commits it, verifies local-draft stroke count and rendered-canvas change, then checks Undo/Redo and Escape cancellation.
+- The test is configured to run in both existing desktop 1280×900 and narrow 760×900 browser projects.
+- **Validation blocker:** the current PR head is `2da37ef11fe518314bd77ffd630ee347f12977c1`. At 2026-11-01 17:31 Asia/Baghdad, `fetch_commit_workflow_runs` returned no run for this head and the combined commit status contained no checks. The GitHub connector available in this runtime has no workflow-dispatch action. The container cannot resolve GitHub and has no checkout, so neither `npm test`, `npm run build`, nor Playwright was run locally. This change is therefore **not validated and not ready for human review**. Do not infer a pass from the test file being committed.
+- The repository's existing CI workflow supports manual `workflow_dispatch`; the next action is to run the existing CI workflow against `codex/studio-and-field-guide` through GitHub Actions, then inspect the full job result and browser artifact. Repair only a concrete failure.
+
+### Comparative design decision — 2026-11-01
+- [Excalidraw official product page](https://plus.excalidraw.com/) and [live editor](https://excalidraw.com/) keep a large, dominant drawing canvas with compact tool access. The Atelier should retain its specialist canvas-first layout rather than add a second keyboard toolbar that competes with the drawing surface.
+- [tldraw official SDK product page](https://tldraw.dev/) documents a production canvas with undo/redo, keyboard navigation and adaptive accessibility; its [accessibility guide](https://tldraw.dev/sdk-features/accessibility) describes keyboard navigation and screen-reader announcements. The Atelier now provides a minimal keyboard path for creating strokes, but does not claim tldraw-level object navigation, selection or screen-reader support.
+- [Official Witch Hat Atelier anime site](https://tongari-anime.com/en/) remains a visual reference for its paper/ink editorial hierarchy only. No official artwork, marks or assets were copied.
+- Decision: preserve the existing canvas hierarchy and add only the affordances required to operate that canvas without a pointer: a visible crosshair, concise instructions and state announcements. This is a functional accessibility addition, not a palette redesign.
+
+### Remaining gaps
+- CI, build and real Chromium execution for the new head are pending; no current-commit screenshot has been inspected.
+- Manual NVDA/VoiceOver testing, RTL arrow behavior, Meta-key history behavior on macOS, and keyboard-only construction of a complete valid spell remain unverified.
+- The Field guide still has only two sample-spell entries and unused vertical space. Invalid closed-seal history, broader classifier accuracy, and the complete visual-quality gate remain open.
+- Keep PR #1 Draft. Do not mark this milestone `AWAITING_HUMAN_REVIEW` until current-head CI, actual browser evidence and the applicable accessibility review pass.
+
+Rollback: revert commits `b6ac924`, `619e3f9`, `2abdcf1`, `94aad38` and `2da37ef` on the existing branch. No merge or deployment.
