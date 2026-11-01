@@ -325,3 +325,71 @@ test("editable fields do not consume drawing history shortcuts", async ({ page }
     await expect.poll(() => canvasSignature(canvas)).toBe(blankSignature);
   }
 });
+
+
+test("reference tabs support keyboard navigation and announce spell-state changes", async ({ page }, testInfo) => {
+  await page.goto("/");
+  const status = page.locator("#statusValue");
+  await expect(status).not.toHaveText("Loading");
+  await expect(status).toHaveAttribute("role", "status");
+  await expect(status).toHaveAttribute("aria-live", "polite");
+  await expect(status).toHaveAttribute("aria-atomic", "true");
+
+  const fieldGuide = page.getByRole("button", { name: "Field guide" });
+  await fieldGuide.focus();
+  await page.keyboard.press("Enter");
+
+  const dictionaryTab = page.getByRole("tab", { name: "Dictionary" });
+  const diagnosticTab = page.getByRole("tab", { name: "Diagnostic" });
+  await expect(page.getByRole("tablist", { name: "Reference workspaces" })).toBeVisible();
+  await expect(dictionaryTab).toHaveAttribute("aria-selected", "true");
+  await expect(dictionaryTab).toHaveAttribute("tabindex", "0");
+  await expect(page.locator("#dictionaryRootPanel")).toBeVisible();
+
+  await dictionaryTab.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(diagnosticTab).toBeFocused();
+  await expect(diagnosticTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#diagnosticRootPanel")).toBeVisible();
+
+  await page.keyboard.press("ArrowLeft");
+  await expect(dictionaryTab).toBeFocused();
+  await expect(dictionaryTab).toHaveAttribute("aria-selected", "true");
+
+  const sampleTab = page.getByRole("tab", { name: "Sample Spells" });
+  const sigilsTab = page.getByRole("tab", { name: "Sigils" });
+  const signsTab = page.getByRole("tab", { name: "Signs" });
+  await sampleTab.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(sigilsTab).toBeFocused();
+  await expect(sigilsTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#sigilReferencePanel")).toBeVisible();
+
+  await page.keyboard.press("End");
+  await expect(signsTab).toBeFocused();
+  await expect(signsTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#signReferencePanel")).toBeVisible();
+
+  await page.keyboard.press("Home");
+  await expect(sampleTab).toBeFocused();
+  await expect(page.locator("#sampleSpellReferencePanel")).toBeVisible();
+
+  await diagnosticTab.focus();
+  await page.keyboard.press("Enter");
+  const parserTab = page.getByRole("tab", { name: "Parser" });
+  const astTab = page.getByRole("tab", { name: "AST" });
+  const irTab = page.getByRole("tab", { name: "IR" });
+  await parserTab.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(astTab).toBeFocused();
+  await expect(page.locator("#astPanelShell")).toBeVisible();
+  await page.keyboard.press("ArrowRight");
+  await expect(irTab).toBeFocused();
+  await expect(irTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#irPanelShell")).toBeVisible();
+
+  await page.screenshot({
+    path: testInfo.outputPath("keyboard-reference-tabs.png"),
+    fullPage: true
+  });
+});
