@@ -516,7 +516,7 @@ test("Field guide explains the supported seal workflow beside real dictionary ex
   await expect(sequence.getByRole("listitem")).toHaveCount(4);
   await expect(sequence).toContainText("Fire, Water, Wind, Earth and Light");
   await expect(sequence).toContainText("Column, Levitation and Convergence");
-  await expect(sequence).toContainText("Multiple rings are unsupported");
+  await expect(sequence).toContainText("multiple rings are unsupported");
   await expect(examples.locator("#sampleSpellReferenceCards .reference-card")).toHaveCount(2);
 
   const layout = await page.evaluate(() => {
