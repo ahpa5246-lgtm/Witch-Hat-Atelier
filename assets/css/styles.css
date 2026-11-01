@@ -1182,3 +1182,114 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-
   white-space: nowrap;
   border: 0;
 }
+
+/* The Field guide pairs the supported construction sequence with real examples. */
+.sample-guide-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.92fr) minmax(0, 1.08fr);
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.sample-guide-sequence {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid rgba(36, 27, 22, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 251, 233, 0.56);
+}
+
+.sample-guide-heading .eyebrow {
+  margin: 0 0 6px;
+  color: var(--teal);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.sample-guide-heading h3,
+.sample-spell-heading h3 {
+  margin: 0 0 5px;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.sample-guide-heading > p:last-child {
+  margin: 0;
+  color: var(--muted-ink);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.seal-sequence {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.seal-sequence li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+
+.seal-step-number {
+  padding-top: 1px;
+  border-bottom: 1px solid rgba(36, 27, 22, 0.22);
+  color: var(--teal);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.seal-sequence h4 {
+  margin: 0 0 3px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.seal-sequence p {
+  margin: 0;
+  color: var(--muted-ink);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.sample-guide-note {
+  margin: 0;
+  padding-top: 10px;
+  border-top: 1px solid rgba(36, 27, 22, 0.16);
+  color: var(--muted-ink);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.sample-spell-examples {
+  min-width: 0;
+}
+
+.sample-spell-heading {
+  margin-bottom: 10px;
+}
+
+.sample-spell-heading .panel-description {
+  max-width: 44ch;
+  margin: 0;
+}
+
+#sampleSpellReferenceCards {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .sample-guide-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
