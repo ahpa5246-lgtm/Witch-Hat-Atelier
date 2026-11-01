@@ -1113,3 +1113,72 @@ button:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-
     box-shadow: 0 6px 18px rgba(36, 27, 22, 0.12);
   }
 }
+
+/* Keyboard drawing: visible focus, a lightweight cursor, and concise instructions. */
+#glyphCanvas:focus-visible {
+  outline: 3px solid var(--teal);
+  outline-offset: -5px;
+}
+
+.canvas-keyboard-hint {
+  display: block;
+  margin-top: 7px;
+  color: var(--muted-ink);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.keyboard-cursor {
+  position: absolute;
+  z-index: 3;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--teal);
+  border-radius: 50%;
+  background: rgba(45, 111, 105, 0.12);
+  box-shadow: 0 0 0 3px rgba(255, 251, 233, 0.7);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.keyboard-cursor::before,
+.keyboard-cursor::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  content: "";
+  background: var(--teal);
+  transform: translate(-50%, -50%);
+}
+
+.keyboard-cursor::before {
+  width: 30px;
+  height: 1px;
+}
+
+.keyboard-cursor::after {
+  width: 1px;
+  height: 30px;
+}
+
+.keyboard-cursor.is-drawing {
+  border-color: #9a4c36;
+  background: rgba(154, 76, 54, 0.14);
+}
+
+.keyboard-cursor.is-drawing::before,
+.keyboard-cursor.is-drawing::after {
+  background: #9a4c36;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
