@@ -504,3 +504,49 @@ test("reference tabs reverse horizontal navigation in RTL", async ({ page }, tes
     fullPage: true
   });
 });
+
+test("Field guide explains the supported seal workflow beside real dictionary examples", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+  await page.getByRole("button", { name: "Field guide" }).click();
+
+  const sequence = page.getByRole("region", { name: "Build a seal" });
+  const examples = page.getByRole("region", { name: "Sample layouts" });
+  await expect(sequence).toBeVisible();
+  await expect(sequence.getByRole("listitem")).toHaveCount(4);
+  await expect(sequence).toContainText("Fire, Water, Wind, Earth and Light");
+  await expect(sequence).toContainText("Column, Levitation and Convergence");
+  await expect(sequence).toContainText("Multiple rings are unsupported");
+  await expect(examples.locator("#sampleSpellReferenceCards .reference-card")).toHaveCount(2);
+
+  const layout = await page.evaluate(() => {
+    const guide = document.querySelector(".sample-guide-sequence").getBoundingClientRect();
+    const sampleList = document.querySelector(".sample-spell-examples").getBoundingClientRect();
+    return {
+      guide: { left: guide.left, right: guide.right, top: guide.top, bottom: guide.bottom },
+      examples: { left: sampleList.left, right: sampleList.right, top: sampleList.top, bottom: sampleList.bottom },
+      viewportWidth: document.documentElement.clientWidth,
+      documentWidth: document.documentElement.scrollWidth
+    };
+  });
+  expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth);
+  if (testInfo.project.name === "narrow") {
+    expect(layout.guide.bottom).toBeLessThanOrEqual(layout.examples.top + 1);
+  } else {
+    expect(layout.guide.right).toBeLessThanOrEqual(layout.examples.left + 1);
+  }
+
+  await page.getByRole("tab", { name: "Sigils" }).click();
+  await expect(page.locator("#sigilReferenceCards .reference-card")).toHaveCount(5);
+  await page.getByRole("tab", { name: "Signs" }).click();
+  await expect(page.locator("#signReferenceCards .reference-card")).toHaveCount(3);
+  await page.getByRole("tab", { name: "Sample Spells" }).click();
+  await page.screenshot({
+    path: testInfo.outputPath("field-guide-workflow.png"),
+    fullPage: true
+  });
+
+  await page.getByRole("button", { name: "Drawing studio" }).click();
+  await expect(page.locator("#referenceWorkspace")).toBeHidden();
+  await expect(page.locator("#glyphCanvas")).toBeVisible();
+});
