@@ -446,3 +446,61 @@ test("keyboard drawing creates a saved stroke and supports cancel, undo, and red
   await expect(page.locator("#drawingAssistStatus")).toHaveText("Keyboard stroke cancelled.");
   await expect.poll(savedStrokeCount).toBe(1);
 });
+
+
+test("reference tabs reverse horizontal navigation in RTL", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+  await page.evaluate(() => {
+    document.documentElement.dir = "rtl";
+  });
+
+  await page.getByRole("button", { name: "Field guide" }).click();
+
+  const dictionaryTab = page.getByRole("tab", { name: "Dictionary" });
+  const diagnosticTab = page.getByRole("tab", { name: "Diagnostic" });
+  await dictionaryTab.focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(diagnosticTab).toBeFocused();
+  await expect(diagnosticTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#diagnosticRootPanel")).toBeVisible();
+
+  await page.keyboard.press("ArrowRight");
+  await expect(dictionaryTab).toBeFocused();
+  await expect(dictionaryTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#dictionaryRootPanel")).toBeVisible();
+
+  const sampleTab = page.getByRole("tab", { name: "Sample Spells" });
+  const sigilsTab = page.getByRole("tab", { name: "Sigils" });
+  const signsTab = page.getByRole("tab", { name: "Signs" });
+  await sampleTab.focus();
+  await page.keyboard.press("ArrowLeft");
+  await expect(sigilsTab).toBeFocused();
+  await expect(sigilsTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#sigilReferencePanel")).toBeVisible();
+
+  await page.keyboard.press("ArrowLeft");
+  await expect(signsTab).toBeFocused();
+  await expect(signsTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#signReferencePanel")).toBeVisible();
+
+  await page.keyboard.press("Home");
+  await expect(sampleTab).toBeFocused();
+  await expect(sampleTab).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator("#sampleSpellReferencePanel")).toBeVisible();
+
+  await page.keyboard.press("End");
+  await expect(signsTab).toBeFocused();
+  await expect(signsTab).toHaveAttribute("aria-selected", "true");
+
+  const geometry = await page.evaluate(() => ({
+    viewportWidth: document.documentElement.clientWidth,
+    documentWidth: document.documentElement.scrollWidth
+  }));
+  expect(geometry.documentWidth).toBeLessThanOrEqual(geometry.viewportWidth);
+
+  await page.screenshot({
+    path: testInfo.outputPath("rtl-reference-tabs.png"),
+    fullPage: true
+  });
+});
