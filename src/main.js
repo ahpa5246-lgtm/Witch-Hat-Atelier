@@ -23,6 +23,10 @@ let spellIR = null;
 let previousRing = null;
 let resizeObserver = null;
 let draftStorage = null;
+let keyboardCursor = null;
+let keyboardCursorVisible = false;
+let keyboardStrokeActive = false;
+let keyboardPoints = [];
 
 function getDraftStorage() {
   try {
@@ -43,11 +47,97 @@ function persistDraft() {
   });
 }
 
+function announceDrawing(message) {
+  if (elements.drawingAssistStatus) {
+    elements.drawingAssistStatus.textContent = message;
+  }
+}
+
+function positionKeyboardCursor() {
+  if (!keyboardCursorVisible || !keyboardCursor) {
+    elements.keyboardCursor.hidden = true;
+    return;
+  }
+
+  const canvasRect = elements.glyphCanvas.getBoundingClientRect();
+  const shellRect = elements.canvasShell.getBoundingClientRect();
+  if (!canvasRect.width || !canvasRect.height || !shellRect.width || !shellRect.height) {
+    elements.keyboardCursor.hidden = true;
+    return;
+  }
+
+  const left = canvasRect.left - shellRect.left
+    + keyboardCursor.x * (canvasRect.width / elements.glyphCanvas.width);
+  const top = canvasRect.top - shellRect.top
+    + keyboardCursor.y * (canvasRect.height / elements.glyphCanvas.height);
+
+  elements.keyboardCursor.hidden = false;
+  elements.keyboardCursor.style.left = `${left}px`;
+  elements.keyboardCursor.style.top = `${top}px`;
+  elements.keyboardCursor.classList.toggle("is-drawing", keyboardStrokeActive);
+}
+
+function ensureKeyboardCursor() {
+  if (!keyboardCursor) {
+    keyboardCursor = {
+      x: elements.glyphCanvas.width / 2,
+      y: elements.glyphCanvas.height / 2
+    };
+  }
+  keyboardCursorVisible = true;
+  elements.canvasHint.classList.remove("hidden");
+  positionKeyboardCursor();
+}
+
+function hideKeyboardCursor() {
+  keyboardCursorVisible = false;
+  positionKeyboardCursor();
+  elements.canvasHint.classList.toggle("hidden", store.count() > 0 || !elements.guidesToggle.checked);
+}
+
+function cancelKeyboardStroke(message) {
+  if (!keyboardStrokeActive) {
+    return;
+  }
+  keyboardStrokeActive = false;
+  keyboardPoints = [];
+  positionKeyboardCursor();
+  announceDrawing(message);
+}
+
+function moveKeyboardCursor(dx, dy, step) {
+  ensureKeyboardCursor();
+  keyboardCursor = {
+    x: Math.max(0, Math.min(elements.glyphCanvas.width, keyboardCursor.x + dx * step)),
+    y: Math.max(0, Math.min(elements.glyphCanvas.height, keyboardCursor.y + dy * step))
+  };
+
+  if (keyboardStrokeActive) {
+    const last = keyboardPoints[keyboardPoints.length - 1];
+    const distance = Math.hypot(keyboardCursor.x - last.x, keyboardCursor.y - last.y);
+    if (distance >= CONFIG.input.minPointDistance) {
+      keyboardPoints.push({
+        ...keyboardCursor,
+        pressure: 0.5,
+        t: performance.now()
+      });
+    }
+  }
+
+  positionKeyboardCursor();
+}
+
 function setupCanvasSizing() {
   resizeObserver = setupResponsiveCanvasSizing({
     elements,
     store,
     onCanvasResized: () => {
+      if (keyboardStrokeActive) {
+        cancelKeyboardStroke("Keyboard stroke cancelled because the canvas was resized.");
+      }
+      keyboardCursor = null;
+      keyboardCursorVisible = false;
+      positionKeyboardCursor();
       previousRing = null;
       recompute();
     }
@@ -69,13 +159,25 @@ function recompute() {
   previousRing = pipeline.ring;
   spellIR = compileSpell({ glyphAST: pipeline.glyphAST, dictionary, config: CONFIG });
   updateSummary({ elements, store, capture, pipeline, spellIR });
+  if (capture?.locked) {
+    if (keyboardStrokeActive) {
+      cancelKeyboardStroke("Keyboard stroke cancelled because the spell ring is closed.");
+    }
+    keyboardCursorVisible = false;
+    positionKeyboardCursor();
+  } else if (keyboardCursorVisible) {
+    elements.canvasHint.classList.remove("hidden");
+    positionKeyboardCursor();
+  }
   updateDiagnostics({ elements, store, pipeline, spellIR });
 }
 
 function animationFrame(timestamp) {
   renderer.renderGlyph({
     strokes: store.getStrokes(),
-    currentStroke: capture.getCurrentStroke(),
+    currentStroke: keyboardStrokeActive
+      ? { id: "keyboard-preview", points: keyboardPoints }
+      : capture.getCurrentStroke(),
     pipeline,
     showGuides: elements.guidesToggle.checked,
     showDebug: elements.diagnosticsToggle.checked
@@ -144,6 +246,105 @@ function setupControls() {
 
     event.preventDefault();
     (isUndo ? elements.undoButton : document.getElementById("redoButton")).click();
+  });
+
+  const canvas = elements.glyphCanvas;
+  const directions = {
+    ArrowLeft: [-1, 0],
+    ArrowRight: [1, 0],
+    ArrowUp: [0, -1],
+    ArrowDown: [0, 1]
+  };
+
+  canvas.addEventListener("keydown", (event) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    const direction = directions[event.key];
+    if (direction) {
+      event.preventDefault();
+      if (!capture?.enabled) {
+        announceDrawing("The drawing surface is still loading.");
+        return;
+      }
+      if (capture.locked) {
+        announceDrawing("Drawing is locked while the spell ring is closed. Use Undo or Clear.");
+        return;
+      }
+      moveKeyboardCursor(direction[0], direction[1], event.shiftKey ? 36 : 12);
+      return;
+    }
+
+    if (event.code === "Space") {
+      event.preventDefault();
+      if (event.repeat) {
+        return;
+      }
+      if (!capture?.enabled) {
+        announceDrawing("The drawing surface is still loading.");
+        return;
+      }
+      if (capture.locked) {
+        announceDrawing("Drawing is locked while the spell ring is closed. Use Undo or Clear.");
+        return;
+      }
+
+      ensureKeyboardCursor();
+      if (!keyboardStrokeActive) {
+        keyboardStrokeActive = true;
+        keyboardPoints = [{
+          ...keyboardCursor,
+          pressure: 0.5,
+          t: performance.now()
+        }];
+        positionKeyboardCursor();
+        announceDrawing("Keyboard stroke started. Use arrow keys to draw; press Space to finish or Escape to cancel.");
+        return;
+      }
+
+      const points = keyboardPoints;
+      keyboardStrokeActive = false;
+      keyboardPoints = [];
+      positionKeyboardCursor();
+
+      let length = 0;
+      for (let index = 1; index < points.length; index += 1) {
+        length += Math.hypot(
+          points[index].x - points[index - 1].x,
+          points[index].y - points[index - 1].y
+        );
+      }
+
+      if (points.length >= 2 && length >= CONFIG.input.minStrokeLength) {
+        store.addStroke(points);
+        previousRing = null;
+        recompute();
+        announceDrawing("Keyboard stroke added.");
+      } else {
+        announceDrawing("Stroke was too short and was not added.");
+      }
+      return;
+    }
+
+    if (event.key === "Escape" && keyboardStrokeActive) {
+      event.preventDefault();
+      cancelKeyboardStroke("Keyboard stroke cancelled.");
+    }
+  });
+
+  canvas.addEventListener("blur", () => {
+    if (keyboardStrokeActive) {
+      cancelKeyboardStroke("Keyboard stroke cancelled because the drawing surface lost focus.");
+    }
+    hideKeyboardCursor();
+  });
+
+  canvas.addEventListener("pointerdown", () => {
+    if (keyboardStrokeActive) {
+      cancelKeyboardStroke("Keyboard stroke cancelled; pointer drawing is active.");
+    }
+    hideKeyboardCursor();
   });
 
   elements.clearButton.addEventListener("click", () => {
