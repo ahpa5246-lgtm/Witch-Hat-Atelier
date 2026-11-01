@@ -261,3 +261,18 @@ Next step: inspect the exact advisory name, vulnerable range, dependency path, a
 - The moderate Vite advisory is identified and has a documented patched release, but is **not yet remediated**.
 - The Field guide still has two sample-spell entries and substantial unused vertical space; this remains a separate content/hierarchy task.
 - PR #1 remains Draft; no merge or deployment.
+
+
+## 2026-11-01 — patch the Vite 6.4.4 moderate advisory (validation pending)
+
+### Bounded dependency remediation
+- Updated the direct Vite development dependency from `^6.4.0` to `^6.4.5`, and aligned the committed npm lockfile to the exact Vite 6.4.5 registry tarball and SHA-512 integrity value. The transitive dependency graph is unchanged because the 6.4.5 package metadata retains the same runtime dependency ranges as 6.4.4.
+- Tightened the retained `npm audit --json` gate from high/critical to moderate-or-higher. The JSON report remains an uploaded CI artifact; a missing vulnerability summary or any moderate/high/critical finding now fails the job.
+- The advisory is [GHSA-8g5g-mxqh-grgj / CVE-2026-118662](https://github.com/advisories/GHSA-8g5g-mxqh-grgj), affecting Vite 6.4.4 and patched in 6.4.5. The current dev script binds to `127.0.0.1`, which limits network exposure; the dependency finding is still remediated rather than waived.
+
+### Validation state
+- Code commit: pending creation on the existing PR #1 branch.
+- Current-head `npm ci`, full `npm audit`, Node tests, Vite production build, desktop/narrow Playwright journeys, and screenshot artifact inspection are pending CI.
+- Do not mark the advisory cleared until the current-head report shows zero vulnerabilities and the full existing suite passes. The Field guide's sparse two-entry content hierarchy, Arabic screen-reader coverage, and complete comparative visual-quality gate remain separate open items.
+
+Rollback: revert the dependency, lockfile and audit-gate changes on this existing draft branch; no merge or deployment.

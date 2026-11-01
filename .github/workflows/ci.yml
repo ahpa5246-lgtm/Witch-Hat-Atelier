@@ -26,7 +26,7 @@ jobs:
       - name: Capture dependency advisory details
         run: |
           mkdir -p artifacts
-          npm audit --json --audit-level=high > artifacts/npm-audit.json || true
+          npm audit --json --audit-level=moderate > artifacts/npm-audit.json || true
           node <<'NODE'
           const fs = require("node:fs");
           const raw = fs.readFileSync("artifacts/npm-audit.json", "utf8").replace(/^\\uFEFF/, "");
@@ -37,8 +37,8 @@ jobs:
             process.exit(2);
           }
           console.log(JSON.stringify(counts));
-          if (counts.high > 0 || counts.critical > 0) {
-            console.error("High or critical dependency advisories block CI.");
+          if (counts.moderate > 0 || counts.high > 0 || counts.critical > 0) {
+            console.error("Moderate or higher dependency advisories block CI.");
             process.exit(1);
           }
           NODE
