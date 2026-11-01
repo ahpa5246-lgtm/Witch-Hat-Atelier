@@ -243,3 +243,21 @@ Rollback: revert the RTL browser test and this review entry on the existing bran
 - Do not mark the advisory resolved, do not upgrade packages speculatively, and do not treat a green product test job as a clean dependency audit.
 
 Next step: inspect the exact advisory name, vulnerable range, dependency path, and fixed version from the uploaded JSON; apply only the smallest compatible lockfile update if the advisory is confirmed and a patched version is available.
+
+
+## 2026-11-01 — npm advisory identified; high/critical audit gate enforced
+
+### Exact audit result
+- CI run [41333476430](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41333476430) completed successfully on PR #1 head `eb8108bae15fb2c678b66680d00b77a5aa8b7cb9`. Node tests, Vite build, Chromium journeys, and evidence upload all passed.
+- Audit artifact [13094356077](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41333476430/artifacts/13094356077) contains `artifacts/npm-audit.json` (1,083 bytes; SHA-256 `40097825c7df5e0d0f1438d0b2687dc934b770d0af549637746044315ded1d81`). The archive SHA-256 is `6acc8adde84760051f82164b127b68d60b9ae8d6b50442c810a1fd6381b72cef`.
+- The report identifies one direct moderate advisory: `vite@6.4.4`, GHSA-8g5g-mxqh-grgj / CVE-2026-118662, affected range `=6.4.4`; the advisory lists `6.4.5` as the patched version. No low, high, or critical advisories were reported.
+- The advisory concerns Vite dev-server `server.fs.deny` checks bypassed by query parameters. Its documented exposure requires a network-exposed Vite dev server plus a file that is both within the allowed directory and denied by configuration. The project dev script binds to `127.0.0.1`; that limits the default exposure but does not remove the dependency advisory. See [GitHub Advisory GHSA-8g5g-mxqh-grgj](https://github.com/advisories/GHSA-8g5g-mxqh-grgj).
+
+### CI policy adjustment
+- The audit step now retains the JSON report on every run and fails CI when the report is unavailable or contains high/critical advisories. Moderate findings remain visible and non-blocking while the patch is prepared; the step does not run an automatic fix.
+- No package or lockfile was changed in this diagnostic milestone. The next bounded implementation is to update the direct Vite dependency to patched `6.4.5`, regenerate the lockfile with npm, then verify a zero-advisory audit plus all existing tests/build/Playwright journeys.
+
+### Current status
+- The moderate Vite advisory is identified and has a documented patched release, but is **not yet remediated**.
+- The Field guide still has two sample-spell entries and substantial unused vertical space; this remains a separate content/hierarchy task.
+- PR #1 remains Draft; no merge or deployment.
