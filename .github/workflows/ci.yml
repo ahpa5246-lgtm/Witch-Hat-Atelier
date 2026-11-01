@@ -26,8 +26,22 @@ jobs:
       - name: Capture dependency advisory details
         run: |
           mkdir -p artifacts
-          npm audit --json > artifacts/npm-audit.json
-        continue-on-error: true
+          npm audit --json --audit-level=high > artifacts/npm-audit.json || true
+          node <<'NODE'
+          const fs = require("node:fs");
+          const raw = fs.readFileSync("artifacts/npm-audit.json", "utf8").replace(/^\\uFEFF/, "");
+          const report = JSON.parse(raw);
+          const counts = report.metadata?.vulnerabilities;
+          if (!counts) {
+            console.error("npm audit returned no vulnerability metadata; refusing an unverified pass.");
+            process.exit(2);
+          }
+          console.log(JSON.stringify(counts));
+          if (counts.high > 0 || counts.critical > 0) {
+            console.error("High or critical dependency advisories block CI.");
+            process.exit(1);
+          }
+          NODE
       - name: Run tests
         run: npm test
       - name: Build
