@@ -199,3 +199,24 @@ Rollback: revert commits `b6ac924`, `619e3f9`, `2abdcf1`, `94aad38` and `2da37ef
 - The full comparative visual-quality gate remains open. This milestone verifies one input journey and current-head CI; it does not authorize release, merge, or deployment.
 
 Rollback: revert the keyboard-drawing commits on this existing branch; no merge or deployment.
+
+
+## 2026-11-01 — RTL keyboard tab-navigation acceptance (validation pending)
+
+### Bounded test-only milestone
+- Starting PR #1 head: `68e519902212a18e66bdd62a797bee6fedabf1ff`.
+- Added a real Chromium journey that switches the document to RTL, opens the Field guide, and exercises the actual outer Reference workspaces and nested Dictionary entries tablists.
+- The journey verifies reversed horizontal-arrow semantics (ArrowLeft advances and ArrowRight returns), Home/End behavior, focus movement, `aria-selected`, and the visible panel associated with each tab. It records desktop and narrow screenshots and checks that the RTL reference workspace does not create horizontal document overflow.
+- No production JavaScript, recognition, storage, or styling changed. This is an acceptance test for the RTL direction logic already implemented in `src/ui/tabs.js`.
+
+### Validation state
+- The test and this review entry are being committed to the existing Draft PR #1 branch.
+- Current-head GitHub Actions, Playwright results, and screenshot inspection are **pending**. Do not count the RTL acceptance as passed until the resulting run is complete and its artifact is inspected.
+- The existing direct-product comparison remains Excalidraw and tldraw, with the official Witch Hat Atelier anime site as an editorial visual reference. This test-only milestone does not change the design direction or pass the comparative visual-quality gate.
+
+### Remaining limits
+- This covers automated arrow-key direction and tab semantics in Chromium; it does not establish Arabic translation quality, mixed-direction identifiers, manual NVDA/VoiceOver speech output, or macOS behavior.
+- The Field guide still has two sample-spell entries and substantial unused vertical space. The moderate dependency advisory remains unidentified pending a full dependency audit.
+- Keep PR #1 Draft. No merge or deployment.
+
+Rollback: revert the RTL browser test and this review entry on the existing branch.
