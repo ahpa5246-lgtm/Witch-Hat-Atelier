@@ -4,6 +4,8 @@ export function getElements() {
     effectCanvas: document.querySelector("#effectCanvas"),
     canvasShell: document.querySelector(".canvas-shell"),
     canvasHint: document.querySelector("#canvasHint"),
+    keyboardCursor: document.querySelector("#keyboardCursor"),
+    drawingAssistStatus: document.querySelector("#drawingAssistStatus"),
     undoButton: document.querySelector("#undoButton"),
     clearButton: document.querySelector("#clearButton"),
     guidesToggle: document.querySelector("#guidesToggle"),
