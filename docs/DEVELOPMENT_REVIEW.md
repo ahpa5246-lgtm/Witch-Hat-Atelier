@@ -339,3 +339,15 @@ Rollback: revert the four commits listed above on the existing draft branch; no 
 - This CI-only change does not alter the current user journeys or pass the visual-quality gate. The existing released-product comparison remains Excalidraw and tldraw, with the official Witch Hat Atelier anime site as the editorial reference. The Field guide still has two validated sample layouts; 320px, 200% zoom, Arabic UI copy, and manual NVDA/VoiceOver checks remain open.
 
 Keep PR #1 Draft. No merge or deployment.
+
+
+### Exact-head validation — 2026-11-02
+- Workflow implementation commit: `46a5c7b27bd4012a4b53d5bfbddf8ad4a2d37ad8`.
+- Review-record head before this validation note: `f0ca2092ee096624974ea7c070d7b2d59e20e606`.
+- GitHub Actions run [41387085691](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41387085691) passed on the workflow implementation commit. Run [41387088729](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41387088729) also passed on the then-current PR head containing this review record.
+- Both runs used checkout v7, setup-node v7 and upload-artifact v7. The inspected current-head job log contains no Node.js 20 action-runtime deprecation warning.
+- The workflow installed Node 24. `npm ci` reported 0 vulnerabilities; the retained moderate-or-higher audit gate passed. Node suite: 40 passed, 0 failed. Vite 6.4.5 production build: 54 modules transformed. Playwright: 17 passed, 3 intentional project skips across desktop 1280×900 and narrow 760×900.
+- Current-head browser evidence artifact [13116370104](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41387088729/artifacts/13116370104), 2,228,871 bytes, SHA-256 `9385493311da46ccc8b52e4c58a6da51cc86cec54d4423908b87770ac3b066cc`, was uploaded and is bound to review-record head `f0ca2092ee096624974ea7c070d7b2d59e20e606`. No UI code changed in this milestone, so prior inspected desktop/narrow screenshots remain the applicable visual evidence.
+- This closes the Node 20 Actions-runtime warning and the project's CI build/test runtime migration. It does not close the Field guide content, 320px/200% zoom, Arabic localization, manual NVDA/VoiceOver, or comparative visual-quality gaps.
+
+Keep PR #1 Draft. No merge or deployment.
