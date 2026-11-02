@@ -352,14 +352,26 @@ Keep PR #1 Draft. No merge or deployment.
 
 Keep PR #1 Draft. No merge or deployment.
 
-## 2026-11-02 — 320px and 200%-equivalent responsive acceptance (validation pending)
+## 2026-11-02 — 320px and 200%-equivalent responsive acceptance verified
 
-### Scope and comparison
-- Extend the existing Chromium journey to the previously unverified 320×720 mobile width and a 640×450 CSS viewport at device-pixel-ratio 2. The latter represents the effective layout area of a 1280×900 display at 200% browser zoom; it is explicitly a zoom-equivalent browser context, not a manual operating-system zoom test.
-- Exercise the real Drawing studio → Field guide → Sigils/Signs → Drawing studio navigation, assert that the canvas and reference tabs remain within the horizontal viewport, and verify that the five sigil and three sign entries remain reachable.
-- Rechecked the released direct canvas products [Excalidraw](https://plus.excalidraw.com/) and [tldraw editor](https://tldraw.dev/sdk-features/editor), plus the [official Witch Hat Atelier anime site](https://tongari-anime.com/en/) as an art-direction reference. Keep the canvas as the primary work surface, keep reference browsing separate, and do not copy third-party or official artwork.
-- This is a responsive/accessibility acceptance stage, not a visual redesign. It does not claim screen-reader output, true browser-zoom behavior on every platform, or a full visual-quality pass.
+### Exact-head verification
+- Responsive test and pending review entry were added in commit `951f7745be587b79a82da99c135d0b947fe39de3`.
+- GitHub Actions PR run [41390054480](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41390054480) completed successfully on that exact PR head.
+- `npm ci`: passed; the audit artifact records `info=0, low=0, moderate=0, high=0, critical=0, total=0`. The existing moderate-or-higher audit gate passed.
+- Node suite: 40 passed. Vite 6.4.5 production build: 54 modules transformed.
+- Playwright: 18 passed and 4 intentional skips across the desktop and narrow projects. The new responsive case runs in the narrow project; its desktop-project skip is intentional.
+- The workflow log contains a non-blocking npm notice that the `esbuild@0.25.12` install script is not covered by the current `allowScripts` list. Dependency installation and the production build both completed; retain the notice for a separate dependency-policy review rather than silently treating it as an audit vulnerability.
 
-### Validation pending
-- The new browser test captures the 320×720 studio and Field guide and the 200%-equivalent Field guide. It asserts no horizontal document overflow and checks the actual visible tab bounds.
-- Exact-head CI, test counts, production build, moderate-or-higher npm audit, and inspection of the uploaded screenshots remain pending. Do not mark this stage green until the CI artifact is inspected.
+### Actual viewport and task evidence
+- At 320×720, the real Drawing studio loaded, its canvas stayed within the horizontal viewport, and the Field guide opened without document overflow. The Sample Spells, Sigils and Signs tabs remained visible and reachable; the test exercised the five sigil entries and three sign entries, then returned to Drawing studio.
+- The zoom-equivalent context used a 640×450 CSS viewport at device-pixel-ratio 2 (1280×900 physical pixels), representing the effective layout area of a 1280×900 display at 200% browser zoom. It verified the studio/guide switch, visible tabs and no horizontal document overflow. This is not a manual browser/OS zoom test on a user's machine.
+- Artifact [13116971783](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41390054480/artifacts/13116971783) is 2,804,433 bytes; downloaded archive SHA-256: `48a0a9fae8719854146f22991eb46224e7018ccf29549dc0774d973121bccea5`. I inspected `studio-320x720.png` (320×1185), `field-guide-320x720.png` (320×1484), and `field-guide-200-percent-equivalent.png` (1280×2314 full-page capture). The mobile workspace labels wrap onto two lines but remain visible; no horizontal clipping was observed.
+- The artifact also retains the desktop/narrow Field guide and drawing-history captures from the same current-head run. The npm audit JSON was extracted and checked directly.
+
+### Current comparison and remaining gaps
+- Rechecked the released [Excalidraw editor](https://excalidraw.com/) and its official editor capture: the canvas remains dominant, with a compact tool strip and contextual style/collaboration panels. [tldraw's released whiteboard](https://tldraw.dev/features/out-of-the-box-whiteboard) documents toolbars, style panels, keyboard actions, undo/redo, persistence/recovery, zoom and camera controls. The Atelier keeps its smaller scope: canvas-first drawing and a separate field guide; zoom/pan and collaboration are not implied or copied.
+- The [official Witch Hat Atelier anime site](https://tongari-anime.com/en/) remains an art-direction reference only. No official artwork, logos, marks or layouts were copied.
+- This milestone changes browser tests and review evidence only; no production UI or parser code changed. It closes automated 320px and 200%-equivalent viewport coverage, not the full visual-quality gate.
+- Still open: manual NVDA/VoiceOver output, real Arabic UI localization and mixed-direction copy, manual browser/OS zoom verification, keyboard tab-order review beyond the tested tabs, and a fuller validated sample-spell library. The guide still has only two real sample layouts; no additional spell canon was invented. Do not infer release readiness from these passing viewport tests.
+
+Keep PR #1 Draft. No merge or deployment.
