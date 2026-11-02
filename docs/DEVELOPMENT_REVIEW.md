@@ -319,3 +319,23 @@ Rollback: revert the dependency, lockfile and audit-gate changes on this existin
 - The formal `visual_quality_gate.py` implementation audit was not run in this environment. The screenshots and official comparator review are evidence for this bounded change, not a full visual-quality approval. The PR remains a draft.
 
 Rollback: revert the four commits listed above on the existing draft branch; no merge or deployment.
+
+
+## 2026-11-02 — CI runtime modernization (validation pending)
+
+### Failure-first evidence
+- PR #1 head before this maintenance stage: `1ac18a2608d75947d64de2dc537ee40a35631903`.
+- Current-head CI [41348538804](https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier/actions/runs/41348538804) passed application checks, but its log emitted a Node.js 20 action-runtime deprecation warning for `actions/checkout@v4`, `actions/setup-node@v4`, and `actions/upload-artifact@v4`.
+- Vite 6 supports Node.js 18, 20 and 22+; Node 24 is within the documented supported range. The workflow was still executing the project on Node 20.
+
+### Bounded maintenance change
+- Updated `actions/checkout` from v4 to v7, `actions/setup-node` from v4 to v7, and `actions/upload-artifact` from v4 to v7. The first-party action metadata for these release lines uses the Node 24 action runtime.
+- Updated the project test/build runtime from Node 20 to Node 24. No package, lockfile, application source, browser journey, or Pages/deployment workflow changed.
+- Implementation commit: `46a5c7b27bd4012a4b53d5bfbddf8ad4a2d37ad8`.
+
+### Validation pending
+- The exact final PR #1 head must pass `npm ci`, the moderate-or-higher audit gate, all 40 Node tests, the Vite production build, and the desktop/narrow Playwright suite (17 expected browser passes with 3 intentional project skips).
+- Inspect the final CI log to confirm that the Node.js 20 action-runtime warning is absent. Do not call the migration verified until the exact-head run completes.
+- This CI-only change does not alter the current user journeys or pass the visual-quality gate. The existing released-product comparison remains Excalidraw and tldraw, with the official Witch Hat Atelier anime site as the editorial reference. The Field guide still has two validated sample layouts; 320px, 200% zoom, Arabic UI copy, and manual NVDA/VoiceOver checks remain open.
+
+Keep PR #1 Draft. No merge or deployment.
