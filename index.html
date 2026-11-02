@@ -15,14 +15,19 @@
           <h1>Witch Hat Atelier Spell Simulator</h1>
         </div>
         <div class="header-actions">
-          <a class="header-link" href="https://github.com/ytnrvdf/wha-spell-simulator" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="header-link" href="https://github.com/ahpa5246-lgtm/Witch-Hat-Atelier" target="_blank" rel="noreferrer">GitHub</a>
         </div>
       </header>
 
-      <main class="workspace">
+      <nav class="workspace-nav" aria-label="Workspace">
+        <button type="button" id="studioButton" aria-pressed="true">Drawing studio</button>
+        <button type="button" id="referenceButton" aria-pressed="false">Field guide</button>
+      </nav>
+      <main class="workspace" id="drawingWorkspace">
         <aside class="control-panel" aria-label="Spell controls">
           <section class="control-section">
-            <button type="button" id="undoButton">Undo</button>
+            <button type="button" id="undoButton" aria-keyshortcuts="Control+Z Meta+Z">Undo</button>
+            <button type="button" id="redoButton" aria-keyshortcuts="Control+Shift+Z Control+Y Meta+Shift+Z Meta+Y">Redo</button>
             <button type="button" id="clearButton">Clear</button>
           </section>
 
@@ -38,7 +43,7 @@
           </section>
 
           <h2 class="panel-section-title">Spell State</h2>
-          <div class="spell-state-status" id="statusValue">Loading</div>
+          <div class="spell-state-status" id="statusValue" role="status" aria-live="polite" aria-atomic="true">Loading</div>
           <section class="summary-band">
             <div>
               <span class="label">Element</span>
@@ -74,13 +79,25 @@
             <p class="canvas-hint" id="canvasHint">
               Draw an open spell ring. Place sigils in the center and signs around them.
               When everything is ready, seal the circle to awaken the spell.
+              <span class="canvas-keyboard-hint">Keyboard: focus the canvas; use arrow keys to move, Shift+Arrow to move faster, Space to start or finish a stroke, and Escape to cancel.</span>
             </p>
-            <canvas id="glyphCanvas" width="1200" height="800"></canvas>
-            <canvas id="effectCanvas" width="1200" height="800"></canvas>
+            <canvas
+              id="glyphCanvas"
+              width="1200"
+              height="800"
+              tabindex="0"
+              role="application"
+              aria-label="Spell drawing canvas"
+              aria-describedby="canvasHint"
+              aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Escape"
+            ></canvas>
+            <canvas id="effectCanvas" width="1200" height="800" aria-hidden="true"></canvas>
+            <div id="keyboardCursor" class="keyboard-cursor" aria-hidden="true" hidden></div>
+            <p id="drawingAssistStatus" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></p>
           </div>
         </section>
 
-        <aside class="dictionary-panel" aria-label="Dictionary and diagnostics">
+        <aside class="dictionary-panel" id="referenceWorkspace" aria-label="Dictionary and diagnostics" hidden>
           <div class="panel-tabs">
             <button type="button" class="panel-tab-button active" data-panel-root="dictionaryRootPanel">Dictionary</button>
             <button type="button" class="panel-tab-button" data-panel-root="diagnosticRootPanel">Diagnostic</button>
@@ -100,10 +117,55 @@
                 </button>
               </div>
               <div id="sampleSpellReferencePanel" class="reference-list">
-                <p class="panel-description">
-                  Sample spells show complete seal layouts you can use as drawing references.
-                </p>
-                <div id="sampleSpellReferenceCards"></div>
+                <div class="sample-guide-layout">
+                  <section class="sample-guide-sequence" aria-labelledby="seal-sequence-title">
+                    <div class="sample-guide-heading">
+                      <p class="eyebrow">WORKFLOW</p>
+                      <h3 id="seal-sequence-title">Build a seal</h3>
+                      <p>Follow the sequence supported by this prototype.</p>
+                    </div>
+                    <ol class="seal-sequence">
+                      <li>
+                        <span class="seal-step-number" aria-hidden="true">01</span>
+                        <div>
+                          <h4>Draw one open ring</h4>
+                          <p>The ring defines the boundary. Keep it open while placing symbols; an incomplete seal stays prepared.</p>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="seal-step-number" aria-hidden="true">02</span>
+                        <div>
+                          <h4>Place one primary sigil</h4>
+                          <p>The current dictionary recognizes Fire, Water, Wind, Earth and Light. Multiple recognized sigils are unsupported.</p>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="seal-step-number" aria-hidden="true">03</span>
+                        <div>
+                          <h4>Add optional signs</h4>
+                          <p>Column, Levitation and Convergence modify the manifestation. The prototype accepts them in the middle and outer layers.</p>
+                        </div>
+                      </li>
+                      <li>
+                        <span class="seal-step-number" aria-hidden="true">04</span>
+                        <div>
+                          <h4>Close and inspect</h4>
+                          <p>A closed ring activates a valid seal. Check Spell State, then open Diagnostic to inspect parser warnings and compiled behavior.</p>
+                        </div>
+                      </li>
+                    </ol>
+                    <p class="sample-guide-note">Current limits: multiple rings are unsupported. Unknown marks are reported in Diagnostic and may reduce stability.</p>
+                  </section>
+                  <section class="sample-spell-examples" aria-labelledby="sample-spells-title">
+                    <div class="sample-spell-heading">
+                      <div>
+                        <h3 id="sample-spells-title">Sample layouts</h3>
+                        <p class="panel-description">Compare the supported examples, then use the Sigils and Signs tabs to inspect individual marks.</p>
+                      </div>
+                    </div>
+                    <div id="sampleSpellReferenceCards"></div>
+                  </section>
+                </div>
               </div>
               <div id="sigilReferencePanel" class="reference-list" hidden>
                 <p class="panel-description">
