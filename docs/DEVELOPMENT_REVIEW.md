@@ -351,3 +351,15 @@ Keep PR #1 Draft. No merge or deployment.
 - This closes the Node 20 Actions-runtime warning and the project's CI build/test runtime migration. It does not close the Field guide content, 320px/200% zoom, Arabic localization, manual NVDA/VoiceOver, or comparative visual-quality gaps.
 
 Keep PR #1 Draft. No merge or deployment.
+
+## 2026-11-02 — 320px and 200%-equivalent responsive acceptance (validation pending)
+
+### Scope and comparison
+- Extend the existing Chromium journey to the previously unverified 320×720 mobile width and a 640×450 CSS viewport at device-pixel-ratio 2. The latter represents the effective layout area of a 1280×900 display at 200% browser zoom; it is explicitly a zoom-equivalent browser context, not a manual operating-system zoom test.
+- Exercise the real Drawing studio → Field guide → Sigils/Signs → Drawing studio navigation, assert that the canvas and reference tabs remain within the horizontal viewport, and verify that the five sigil and three sign entries remain reachable.
+- Rechecked the released direct canvas products [Excalidraw](https://plus.excalidraw.com/) and [tldraw editor](https://tldraw.dev/sdk-features/editor), plus the [official Witch Hat Atelier anime site](https://tongari-anime.com/en/) as an art-direction reference. Keep the canvas as the primary work surface, keep reference browsing separate, and do not copy third-party or official artwork.
+- This is a responsive/accessibility acceptance stage, not a visual redesign. It does not claim screen-reader output, true browser-zoom behavior on every platform, or a full visual-quality pass.
+
+### Validation pending
+- The new browser test captures the 320×720 studio and Field guide and the 200%-equivalent Field guide. It asserts no horizontal document overflow and checks the actual visible tab bounds.
+- Exact-head CI, test counts, production build, moderate-or-higher npm audit, and inspection of the uploaded screenshots remain pending. Do not mark this stage green until the CI artifact is inspected.

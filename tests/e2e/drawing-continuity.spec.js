@@ -550,3 +550,96 @@ test("Field guide explains the supported seal workflow beside real dictionary ex
   await expect(page.locator("#referenceWorkspace")).toBeHidden();
   await expect(page.locator("#glyphCanvas")).toBeVisible();
 });
+
+test("320px and 200%-equivalent viewports keep the studio and Field guide usable", async ({ page, browser }, testInfo) => {
+  test.skip(testInfo.project.name !== "narrow", "responsive boundary acceptance only");
+
+  const assertNoHorizontalOverflow = async (candidate) => {
+    const geometry = await candidate.evaluate(() => ({
+      viewportWidth: document.documentElement.clientWidth,
+      documentWidth: document.documentElement.scrollWidth
+    }));
+    expect(geometry.documentWidth).toBeLessThanOrEqual(geometry.viewportWidth);
+  };
+
+  await page.goto("/");
+  await expect(page.locator("#statusValue")).not.toHaveText("Loading");
+  await page.setViewportSize({ width: 320, height: 720 });
+
+  const canvas = page.locator("#glyphCanvas");
+  const canvasShell = page.locator(".canvas-shell");
+  await expect(canvas).toBeVisible();
+  await assertNoHorizontalOverflow(page);
+  const mobileCanvasBounds = await canvasShell.boundingBox();
+  expect(mobileCanvasBounds).not.toBeNull();
+  expect(mobileCanvasBounds.x).toBeGreaterThanOrEqual(0);
+  expect(mobileCanvasBounds.x + mobileCanvasBounds.width).toBeLessThanOrEqual(320);
+  await page.screenshot({
+    path: testInfo.outputPath("studio-320x720.png"),
+    fullPage: true
+  });
+
+  await page.getByRole("button", { name: "Field guide" }).click();
+  await expect(page.locator("#referenceWorkspace")).toBeVisible();
+  await assertNoHorizontalOverflow(page);
+  const mobileTabs = page.locator(".reference-tabs [role='tab']");
+  await expect(mobileTabs).toHaveCount(3);
+  for (const tab of await mobileTabs.all()) {
+    await expect(tab).toBeVisible();
+    const bounds = await tab.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(320);
+  }
+
+  await page.getByRole("tab", { name: "Sigils" }).click();
+  await expect(page.locator("#sigilReferenceCards .reference-card")).toHaveCount(5);
+  await assertNoHorizontalOverflow(page);
+  await page.getByRole("tab", { name: "Signs" }).click();
+  await expect(page.locator("#signReferenceCards .reference-card")).toHaveCount(3);
+  await assertNoHorizontalOverflow(page);
+  await page.getByRole("tab", { name: "Sample Spells" }).click();
+  await page.screenshot({
+    path: testInfo.outputPath("field-guide-320x720.png"),
+    fullPage: true
+  });
+  await page.getByRole("button", { name: "Drawing studio" }).click();
+  await expect(canvas).toBeVisible();
+  await assertNoHorizontalOverflow(page);
+
+  // A 640×450 CSS viewport at DPR 2 represents the effective layout area
+  // of a 1280×900 display at 200% browser zoom; it is not an OS zoom test.
+  const zoomContext = await browser.newContext({
+    viewport: { width: 640, height: 450 },
+    deviceScaleFactor: 2
+  });
+  try {
+    const zoomPage = await zoomContext.newPage();
+    await zoomPage.goto("http://127.0.0.1:4173/");
+    await expect(zoomPage.locator("#statusValue")).not.toHaveText("Loading");
+    const zoomMetrics = await zoomPage.evaluate(() => ({
+      width: window.innerWidth,
+      height: window.innerHeight,
+      devicePixelRatio: window.devicePixelRatio
+    }));
+    expect(zoomMetrics).toEqual({ width: 640, height: 450, devicePixelRatio: 2 });
+    await expect(zoomPage.locator("#glyphCanvas")).toBeVisible();
+    await assertNoHorizontalOverflow(zoomPage);
+
+    await zoomPage.getByRole("button", { name: "Field guide" }).click();
+    await expect(zoomPage.locator("#referenceWorkspace")).toBeVisible();
+    await assertNoHorizontalOverflow(zoomPage);
+    for (const name of ["Sample Spells", "Sigils", "Signs"]) {
+      await expect(zoomPage.getByRole("tab", { name })).toBeVisible();
+    }
+    await zoomPage.screenshot({
+      path: testInfo.outputPath("field-guide-200-percent-equivalent.png"),
+      fullPage: true
+    });
+    await zoomPage.getByRole("button", { name: "Drawing studio" }).click();
+    await expect(zoomPage.locator("#glyphCanvas")).toBeVisible();
+    await assertNoHorizontalOverflow(zoomPage);
+  } finally {
+    await zoomContext.close();
+  }
+});
